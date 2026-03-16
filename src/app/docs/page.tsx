@@ -17,6 +17,7 @@ import {
   Truck,
   Tag,
   Ticket,
+  Users,
 } from "lucide-react";
 
 export const metadata = {
@@ -157,7 +158,8 @@ export default function DocsPage() {
             <NavItem href="#products" step="3" label="Agregar productos" />
             <NavItem href="#shipping" step="4" label="Configurar envio" />
             <NavItem href="#promotions" step="5" label="Promociones y cupones" />
-            <NavItem href="#ucp-settings" step="6" label="Configurar UCP" />
+            <NavItem href="#collaborators" step="6" label="Colaboradores" />
+            <NavItem href="#ucp-settings" step="7" label="Configurar UCP" />
 
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               API UCP
@@ -170,7 +172,7 @@ export default function DocsPage() {
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Gemini
             </p>
-            <NavItem href="#gemini-setup" step="7" label="Configurar Gemini" />
+            <NavItem href="#gemini-setup" step="8" label="Configurar Gemini" />
             <NavItem href="#gemini-functions" label="Function declarations" />
             <NavItem href="#gemini-example" label="Ejemplo completo" />
             <NavItem href="#gemini-test" label="Probar con demo" />
@@ -633,11 +635,82 @@ export default function DocsPage() {
               </div>
             </section>
 
-            {/* Step 6: UCP Settings */}
-            <section id="ucp-settings" className="scroll-mt-24 space-y-4">
+            {/* Step 6: Collaborators */}
+            <section id="collaborators" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
                 step="6"
+                icon={Users}
+                title="Colaboradores"
+              />
+              <p className="text-muted-foreground">
+                Invita a empleados o socios a gestionar tu negocio desde su
+                propia cuenta, sin compartir credenciales. Disponible en el{" "}
+                <strong>plan Pro</strong>.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold">Como funciona</h4>
+                  <ol className="ml-4 list-decimal space-y-1 text-sm text-muted-foreground">
+                    <li>
+                      Ve a{" "}
+                      <strong>Dashboard → Configuracion → Colaboradores</strong>
+                    </li>
+                    <li>
+                      Ingresa el email de la persona que quieres invitar y haz
+                      clic en <strong>Invitar</strong>
+                    </li>
+                    <li>
+                      Copia el enlace de invitacion y compartelo con tu
+                      colaborador
+                    </li>
+                    <li>
+                      El colaborador crea una cuenta (o inicia sesion) y acepta
+                      la invitacion
+                    </li>
+                    <li>
+                      El colaborador aparece en tu lista y puede gestionar
+                      productos, pedidos y pagos
+                    </li>
+                  </ol>
+                </div>
+
+                <div>
+                  <h4 className="mb-1 text-sm font-semibold">Limites y permisos</h4>
+                  <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+                    <li>Hasta 5 colaboradores por negocio (plan Pro)</li>
+                    <li>
+                      Los colaboradores pueden gestionar productos, pedidos y
+                      configuracion general
+                    </li>
+                    <li>
+                      Los colaboradores <strong>no pueden</strong> invitar o
+                      revocar otros colaboradores, ni cambiar la facturacion
+                    </li>
+                    <li>Las invitaciones expiran en 7 dias</li>
+                    <li>
+                      Puedes revocar el acceso de un colaborador en cualquier
+                      momento
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    <strong>Plan Free:</strong> Los colaboradores no estan
+                    disponibles. Upgrade a Pro desde la pagina de planes para
+                    habilitar esta funcionalidad.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 7: UCP Settings */}
+            <section id="ucp-settings" className="scroll-mt-24 space-y-4">
+              <SectionHeading
+                id=""
+                step="7"
                 icon={Settings}
                 title="Configurar UCP"
               />
@@ -1022,7 +1095,7 @@ export default function DocsPage() {
             <section id="gemini-setup" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="7"
+                step="8"
                 icon={Bot}
                 title="Configurar Gemini"
               />
