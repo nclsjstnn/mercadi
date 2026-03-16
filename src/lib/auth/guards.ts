@@ -1,0 +1,65 @@
+import { redirect } from "next/navigation";
+import { auth } from "./index";
+import { connectDB } from "@/lib/db/connect";
+import { Tenant } from "@/lib/db/models/tenant";
+
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  plan?: string;
+  tenantId?: string;
+}
+
+interface AuthSession {
+  user: AuthUser;
+}
+
+export async function requireAuth(): Promise<AuthSession> {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/login");
+  }
+  return session as AuthSession;
+}
+
+export async function requireAdmin(): Promise<AuthSession> {
+  const session = await requireAuth();
+  if (session.user.role !== "admin") {
+    // Tenant owners go to their dashboard
+    if (session.user.tenantId) {
+      redirect("/dashboard");
+    }
+    redirect("/onboarding");
+  }
+  return session;
+}
+
+export async function requireTenant(): Promise<AuthSession & { user: AuthUser & { tenantId: string } }> {
+  const session = await requireAuth();
+  if (session.user.role === "admin") {
+    redirect("/admin");
+  }
+  if (!session.user.tenantId) {
+    redirect("/onboarding");
+  }
+  return session as AuthSession & { user: AuthUser & { tenantId: string } };
+}
+
+export async function validateUCPApiKey(
+  tenantSlug: string,
+  apiKey: string | null
+) {
+  if (!apiKey) return null;
+
+  await connectDB();
+  const tenant = await Tenant.findOne({
+    slug: tenantSlug,
+    ucpApiKey: apiKey,
+    ucpEnabled: true,
+    status: "active",
+  });
+
+  return tenant;
+}

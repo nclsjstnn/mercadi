@@ -1,0 +1,90 @@
+import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { connectDB } from "@/lib/db/connect";
+import { User } from "@/lib/db/models/user";
+
+declare module "next-auth" {
+  interface User {
+    role: string;
+    plan?: string;
+    tenantId?: string;
+  }
+}
+
+declare module "@auth/core/jwt" {
+  interface JWT {
+    role: string;
+    plan?: string;
+    tenantId?: string;
+  }
+}
+
+export const authConfig: NextAuthConfig = {
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        await connectDB();
+        const user = await User.findOne({ email: credentials.email });
+        if (!user) return null;
+
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.passwordHash
+        );
+        if (!isValid) return null;
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          plan: user.plan || "free",
+          tenantId: user.tenantId?.toString(),
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user, trigger }) {
+      if (user) {
+        token.role = user.role;
+        token.plan = user.plan || "free";
+        token.tenantId = user.tenantId;
+      }
+      // Refresh tenantId from DB on update trigger or if tenantId is missing
+      if (trigger === "update" || (!token.tenantId && token.sub)) {
+        await connectDB();
+        const dbUser = await User.findById(token.sub).lean();
+        if (dbUser) {
+          token.tenantId = dbUser.tenantId?.toString();
+          token.role = dbUser.role;
+          token.plan = dbUser.plan || "free";
+        }
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub!;
+        session.user.role = token.role;
+        session.user.plan = token.plan || "free";
+        session.user.tenantId = token.tenantId;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
+};
