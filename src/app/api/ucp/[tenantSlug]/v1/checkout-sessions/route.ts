@@ -29,7 +29,7 @@ export async function POST(
       );
     }
 
-    const session = await createSession({
+    const { session, availableShippingOptions } = await createSession({
       tenantSlug,
       lineItems: parsed.data.line_items,
       idempotencyKey,
@@ -54,6 +54,13 @@ export async function POST(
           total: session.totals.total,
         },
         currency: session.currency,
+        fulfillment_required: session.fulfillmentRequired,
+        available_shipping_options: availableShippingOptions.map((o) => ({
+          id: o.id,
+          name: o.name,
+          price: o.price,
+          type: o.type,
+        })),
         expires_at: session.expiresAt.toISOString(),
       },
       { status: 201 }

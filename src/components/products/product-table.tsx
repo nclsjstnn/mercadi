@@ -18,6 +18,7 @@ interface Product {
   title: string;
   sku: string;
   price: number;
+  compareAtPrice?: number;
   stock: number;
   status: string;
   category: string;
@@ -57,7 +58,16 @@ export default function ProductTable({
       key: "price",
       header: "Precio",
       sortable: true,
-      render: (row) => formatPrice(row.price, currency),
+      render: (row) => (
+        <span>
+          {row.compareAtPrice && row.compareAtPrice > row.price && (
+            <span className="mr-1 text-xs text-muted-foreground line-through">
+              {formatPrice(row.compareAtPrice, currency)}
+            </span>
+          )}
+          <span className="font-medium">{formatPrice(row.price, currency)}</span>
+        </span>
+      ),
     },
     {
       key: "stock",

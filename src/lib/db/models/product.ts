@@ -7,10 +7,12 @@ export interface IProduct extends Document {
   title: string;
   description: string;
   price: number;
+  compareAtPrice?: number | null;
   images: string[];
   category: string;
   tags: string[];
   stock: number;
+  intangible: boolean;
   status: "active" | "draft" | "archived";
   createdAt: Date;
   updatedAt: Date;
@@ -24,10 +26,12 @@ const ProductSchema = new Schema<IProduct>(
     title: { type: String, required: true },
     description: { type: String, default: "" },
     price: { type: Number, required: true },
+    compareAtPrice: { type: Number, default: null },
     images: [{ type: String }],
     category: { type: String, default: "" },
     tags: [{ type: String }],
     stock: { type: Number, default: 0 },
+    intangible: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["active", "draft", "archived"],

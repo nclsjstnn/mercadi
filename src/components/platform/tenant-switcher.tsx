@@ -11,12 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Check, ChevronsUpDown, Plus, Sparkles, Building2 } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Sparkles, Building2, Users } from "lucide-react";
 
 interface TenantInfo {
   _id: string;
   name: string;
   slug: string;
+  isOwner: boolean;
 }
 
 interface TenantSwitcherProps {
@@ -90,7 +91,13 @@ export function TenantSwitcher({
                 tenant._id === activeTenantId ? "opacity-100" : "opacity-0"
               }`}
             />
-            <span className="truncate">{tenant.name}</span>
+            <span className="flex-1 truncate">{tenant.name}</span>
+            {!tenant.isOwner && (
+              <span className="ml-2 flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" />
+                Colaborador
+              </span>
+            )}
           </DropdownMenuItem>
         ))}
         {canCreateMore && (

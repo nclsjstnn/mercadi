@@ -9,13 +9,22 @@ import { calculateTax } from "@/lib/utils/tax";
 import { calculateCommission } from "@/lib/payments/commission";
 import { getPaymentProvider } from "@/lib/payments/factory";
 import { SESSION_TTL_MINUTES } from "./constants";
+import { Coupon } from "@/lib/db/models/coupon";
+import { validateAndCalculateCoupon } from "@/lib/utils/coupon";
 import type { ILineItem, IBuyer, IFulfillment } from "@/lib/db/models/checkout-session";
+import type { IShippingOption } from "@/lib/db/models/tenant";
 
 interface CreateSessionInput {
   tenantSlug: string;
   lineItems: Array<{ ucpItemId: string; quantity: number }>;
   idempotencyKey?: string;
   ucpAgent?: string;
+  source?: "ucp" | "storefront";
+}
+
+interface CreateSessionResult {
+  session: InstanceType<typeof CheckoutSession>;
+  availableShippingOptions: IShippingOption[];
 }
 
 interface UpdateSessionInput {
@@ -23,15 +32,29 @@ interface UpdateSessionInput {
   fulfillment?: IFulfillment;
 }
 
-export async function createSession(input: CreateSessionInput) {
+export async function createSession(input: CreateSessionInput): Promise<CreateSessionResult> {
   await connectDB();
 
-  const tenant = await Tenant.findOne({
+  const source = input.source || "ucp";
+  const query: Record<string, unknown> = {
     slug: input.tenantSlug,
-    ucpEnabled: true,
     status: "active",
-  });
-  if (!tenant) throw new Error("Tenant not found or UCP not enabled");
+  };
+  if (source === "storefront") {
+    query["store.enabled"] = true;
+  } else {
+    query.ucpEnabled = true;
+  }
+  const tenant = await Tenant.findOne(query);
+  if (!tenant) throw new Error(
+    source === "storefront"
+      ? "Tienda no encontrada o no habilitada"
+      : "Tenant not found or UCP not enabled"
+  );
+
+  const availableShippingOptions = (tenant.shipping?.options || []).filter(
+    (o: IShippingOption) => o.enabled
+  );
 
   // Check idempotency
   if (input.idempotencyKey) {
@@ -39,12 +62,13 @@ export async function createSession(input: CreateSessionInput) {
       tenantId: tenant._id,
       idempotencyKey: input.idempotencyKey,
     });
-    if (existing) return existing;
+    if (existing) return { session: existing, availableShippingOptions };
   }
 
   // Resolve products and check stock
   const resolvedItems: ILineItem[] = [];
   let subtotal = 0;
+  let allIntangible = true;
 
   for (const item of input.lineItems) {
     const product = await Product.findOne({
@@ -56,6 +80,8 @@ export async function createSession(input: CreateSessionInput) {
     if (product.stock < item.quantity) {
       throw new Error(`Insufficient stock for ${product.title}`);
     }
+
+    if (!product.intangible) allIntangible = false;
 
     const totalPrice = product.price * item.quantity;
     subtotal += totalPrice;
@@ -70,6 +96,8 @@ export async function createSession(input: CreateSessionInput) {
     });
   }
 
+  const fulfillmentRequired = !allIntangible;
+
   const taxBreakdown = calculateTax(
     subtotal,
     tenant.locale.taxRate,
@@ -81,8 +109,10 @@ export async function createSession(input: CreateSessionInput) {
     tenantId: tenant._id,
     status: "open",
     lineItems: resolvedItems,
+    fulfillmentRequired,
     totals: {
       subtotal: taxBreakdown.net,
+      discount: 0,
       tax: taxBreakdown.tax,
       shipping: 0,
       total: taxBreakdown.total,
@@ -93,7 +123,7 @@ export async function createSession(input: CreateSessionInput) {
     expiresAt: new Date(Date.now() + SESSION_TTL_MINUTES * 60 * 1000),
   });
 
-  return session;
+  return { session, availableShippingOptions };
 }
 
 export async function getSession(sessionId: string) {
@@ -122,6 +152,27 @@ export async function updateSession(
 
   if (updates.fulfillment) {
     session.fulfillment = updates.fulfillment;
+
+    // Look up shipping option price if provided
+    if (updates.fulfillment.shippingOptionId) {
+      const tenant = await Tenant.findById(session.tenantId);
+      if (!tenant) throw new Error("Tenant not found");
+      const option = (tenant.shipping?.options || []).find(
+        (o: IShippingOption) =>
+          o.id === updates.fulfillment!.shippingOptionId && o.enabled
+      );
+      if (!option) throw new Error("Opcion de envio no encontrada o no habilitada");
+      if (option.type !== updates.fulfillment.type) {
+        throw new Error("Tipo de envio no coincide con la opcion seleccionada");
+      }
+      session.totals.shipping = option.price;
+    } else {
+      session.totals.shipping = 0;
+    }
+
+    session.totals.total =
+      session.totals.subtotal + session.totals.tax + session.totals.shipping;
+
     if (session.status === "buyer_set" || session.status === "open") {
       session.status = "fulfillment_set";
     }
@@ -138,6 +189,10 @@ export async function completeSession(sessionId: string) {
 
   if (!session.buyer?.email || !session.buyer?.name) {
     throw new Error("Buyer information required before completing");
+  }
+
+  if (session.fulfillmentRequired && !session.fulfillment) {
+    throw new Error("Informacion de envio requerida para productos fisicos");
   }
 
   if (session.status === "completed") {
@@ -224,6 +279,7 @@ export async function completeSession(sessionId: string) {
     buyer: session.buyer,
     fulfillment: session.fulfillment,
     totals: session.totals,
+    couponCode: session.couponCode || undefined,
     currency: session.currency,
     commission: {
       rate: commission.commissionRate,
@@ -233,6 +289,21 @@ export async function completeSession(sessionId: string) {
     },
     status: "confirmed",
   });
+
+  // Increment coupon usage atomically
+  if (session.couponId) {
+    const coupon = await Coupon.findById(session.couponId);
+    if (coupon) {
+      if (coupon.maxUsageCount != null) {
+        await Coupon.findOneAndUpdate(
+          { _id: session.couponId, usageCount: { $lt: coupon.maxUsageCount } },
+          { $inc: { usageCount: 1 } }
+        );
+      } else {
+        await Coupon.findByIdAndUpdate(session.couponId, { $inc: { usageCount: 1 } });
+      }
+    }
+  }
 
   // Decrement stock
   for (const item of session.lineItems) {
@@ -246,6 +317,78 @@ export async function completeSession(sessionId: string) {
   await session.save();
 
   return { session, order, orderId };
+}
+
+export async function applyCoupon(sessionId: string, couponCode: string) {
+  await connectDB();
+  const session = await CheckoutSession.findOne({ sessionId });
+  if (!session) throw new Error("Session not found");
+
+  if (session.status === "completed" || session.status === "cancelled") {
+    throw new Error(`No se puede aplicar cupón a sesión ${session.status}`);
+  }
+
+  const coupon = await Coupon.findOne({
+    tenantId: session.tenantId,
+    code: couponCode.toUpperCase(),
+    status: "active",
+  });
+  if (!coupon) throw new Error("Cupón no encontrado");
+
+  const lineItemsTotal = session.lineItems.reduce((sum, li) => sum + li.totalPrice, 0);
+  const result = validateAndCalculateCoupon(coupon, lineItemsTotal);
+  if (!result.valid) throw new Error(result.error);
+
+  const tenant = await Tenant.findById(session.tenantId);
+  if (!tenant) throw new Error("Tenant not found");
+
+  const discountedAmount = lineItemsTotal - result.discountAmount;
+  const taxBreakdown = calculateTax(
+    discountedAmount,
+    tenant.locale.taxRate,
+    tenant.locale.taxInclusive
+  );
+
+  session.totals.subtotal = taxBreakdown.net;
+  session.totals.discount = result.discountAmount;
+  session.totals.tax = taxBreakdown.tax;
+  session.totals.total = taxBreakdown.total + session.totals.shipping;
+  session.couponCode = coupon.code;
+  session.couponId = coupon._id.toString();
+
+  await session.save();
+  return session;
+}
+
+export async function removeCoupon(sessionId: string) {
+  await connectDB();
+  const session = await CheckoutSession.findOne({ sessionId });
+  if (!session) throw new Error("Session not found");
+
+  if (session.status === "completed" || session.status === "cancelled") {
+    throw new Error(`No se puede modificar sesión ${session.status}`);
+  }
+
+  const lineItemsTotal = session.lineItems.reduce((sum, li) => sum + li.totalPrice, 0);
+
+  const tenant = await Tenant.findById(session.tenantId);
+  if (!tenant) throw new Error("Tenant not found");
+
+  const taxBreakdown = calculateTax(
+    lineItemsTotal,
+    tenant.locale.taxRate,
+    tenant.locale.taxInclusive
+  );
+
+  session.totals.subtotal = taxBreakdown.net;
+  session.totals.discount = 0;
+  session.totals.tax = taxBreakdown.tax;
+  session.totals.total = taxBreakdown.total + session.totals.shipping;
+  session.couponCode = undefined;
+  session.couponId = undefined;
+
+  await session.save();
+  return session;
 }
 
 export async function cancelSession(sessionId: string) {

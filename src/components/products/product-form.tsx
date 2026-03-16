@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProductFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -20,8 +21,10 @@ interface ProductFormProps {
     sku?: string;
     description?: string;
     price?: number;
+    compareAtPrice?: number | null;
     stock?: number;
     category?: string;
+    intangible?: boolean;
     status?: string;
   };
   submitLabel?: string;
@@ -73,15 +76,25 @@ export default function ProductForm({
         <h3 className="text-sm font-medium text-muted-foreground">
           Precio y stock
         </h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="price">Precio (CLP)</Label>
+            <Label htmlFor="price">Precio de venta (CLP)</Label>
             <Input
               id="price"
               name="price"
               type="number"
               required
               defaultValue={defaultValues.price}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="compareAtPrice">Precio original (opcional)</Label>
+            <Input
+              id="compareAtPrice"
+              name="compareAtPrice"
+              type="number"
+              placeholder="Ej: 10000"
+              defaultValue={defaultValues.compareAtPrice ?? ""}
             />
           </div>
           <div className="space-y-2">
@@ -109,6 +122,16 @@ export default function ProductForm({
             name="category"
             defaultValue={defaultValues.category}
           />
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="intangible"
+            name="intangible"
+            defaultChecked={defaultValues.intangible}
+          />
+          <Label htmlFor="intangible" className="font-normal">
+            Producto intangible (digital, servicio, gift card)
+          </Label>
         </div>
         <div className="space-y-2">
           <Label htmlFor="status">Estado</Label>

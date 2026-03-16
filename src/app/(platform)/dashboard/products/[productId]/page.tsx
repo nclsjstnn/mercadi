@@ -45,8 +45,10 @@ export default async function EditProductPage({
               sku: product.sku,
               description: product.description,
               price: product.price,
+              compareAtPrice: product.compareAtPrice ?? null,
               stock: product.stock,
               category: product.category,
+              intangible: product.intangible,
               status: product.status,
             }}
             submitLabel="Guardar Cambios"

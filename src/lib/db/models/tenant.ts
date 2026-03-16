@@ -13,6 +13,34 @@ export interface ITenantPayment {
   providerConfig: Record<string, unknown>;
 }
 
+export interface ITenantStoreTheme {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  logoUrl: string;
+  faviconUrl: string;
+}
+
+export interface ITenantStore {
+  enabled: boolean;
+  theme: ITenantStoreTheme;
+  template: string;
+  customDomain: string;
+  customDomainVerified: boolean;
+}
+
+export interface IShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  type: "shipping" | "pickup";
+  enabled: boolean;
+}
+
+export interface ITenantShipping {
+  options: IShippingOption[];
+}
+
 export interface ITenant extends Document {
   name: string;
   slug: string;
@@ -26,9 +54,12 @@ export interface ITenant extends Document {
   ucpEnabled: boolean;
   ucpApiKey: string;
   payment: ITenantPayment;
+  store: ITenantStore;
+  shipping: ITenantShipping;
   commissionRate: number;
   status: "active" | "inactive" | "pending";
   ownerId: mongoose.Types.ObjectId;
+  collaborators: mongoose.Types.ObjectId[];
   locale: ITenantLocale;
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +82,33 @@ const TenantSchema = new Schema<ITenant>(
       provider: { type: String, default: "mock" },
       providerConfig: { type: Schema.Types.Mixed, default: {} },
     },
+    store: {
+      enabled: { type: Boolean, default: false },
+      theme: {
+        primaryColor: { type: String, default: "#2563eb" },
+        secondaryColor: { type: String, default: "#1e40af" },
+        accentColor: { type: String, default: "#f59e0b" },
+        logoUrl: { type: String, default: "" },
+        faviconUrl: { type: String, default: "" },
+      },
+      template: { type: String, default: "" },
+      customDomain: { type: String, default: "" },
+      customDomainVerified: { type: Boolean, default: false },
+    },
+    shipping: {
+      options: {
+        type: [
+          {
+            id: { type: String, required: true },
+            name: { type: String, required: true },
+            price: { type: Number, required: true },
+            type: { type: String, enum: ["shipping", "pickup"], required: true },
+            enabled: { type: Boolean, default: true },
+          },
+        ],
+        default: [],
+      },
+    },
     commissionRate: { type: Number, default: 0.05 },
     status: {
       type: String,
@@ -58,6 +116,7 @@ const TenantSchema = new Schema<ITenant>(
       default: "pending",
     },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    collaborators: [{ type: Schema.Types.ObjectId, ref: "User" }],
     locale: {
       currency: { type: String, default: "CLP" },
       taxRate: { type: Number, default: 0.19 },
@@ -71,6 +130,11 @@ const TenantSchema = new Schema<ITenant>(
 
 // slug already has unique:true which creates an index
 TenantSchema.index({ ownerId: 1 });
+TenantSchema.index({ collaborators: 1 });
+TenantSchema.index(
+  { "store.customDomain": 1 },
+  { unique: true, sparse: true, partialFilterExpression: { "store.customDomain": { $ne: "" } } }
+);
 
 export const Tenant: Model<ITenant> =
   mongoose.models.Tenant || mongoose.model<ITenant>("Tenant", TenantSchema);

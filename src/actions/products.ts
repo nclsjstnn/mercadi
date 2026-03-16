@@ -17,6 +17,9 @@ export async function createProduct(formData: FormData) {
   const category = (formData.get("category") as string) || "";
   const description = (formData.get("description") as string) || "";
   const status = (formData.get("status") as string) || "draft";
+  const intangible = formData.get("intangible") === "on";
+  const compareAtPriceRaw = formData.get("compareAtPrice") as string;
+  const compareAtPrice = compareAtPriceRaw ? parseInt(compareAtPriceRaw) || null : null;
 
   await Product.create({
     tenantId: session.user!.tenantId,
@@ -24,9 +27,11 @@ export async function createProduct(formData: FormData) {
     sku,
     ucpItemId: `item_${nanoid(12)}`,
     price,
+    compareAtPrice,
     stock,
     category,
     description,
+    intangible,
     status,
   });
 
@@ -43,8 +48,12 @@ export async function updateProduct(productId: string, formData: FormData) {
       title: formData.get("title"),
       description: formData.get("description") || "",
       price: parseInt(formData.get("price") as string),
+      compareAtPrice: formData.get("compareAtPrice")
+        ? parseInt(formData.get("compareAtPrice") as string) || null
+        : null,
       stock: parseInt(formData.get("stock") as string) || 0,
       category: formData.get("category") || "",
+      intangible: formData.get("intangible") === "on",
       status: formData.get("status") || "draft",
     }
   );

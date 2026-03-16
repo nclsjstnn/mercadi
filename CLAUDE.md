@@ -22,7 +22,7 @@ Multi-tenant SaaS enabling Chilean small businesses to expose product catalogs t
 ## Key Directories
 - `src/lib/ucp/` - UCP protocol implementation (profile, checkout state machine)
 - `src/lib/payments/` - Payment provider abstraction + implementations
-- `src/lib/db/models/` - Mongoose models (Tenant, Product, CheckoutSession, Order, User, PaymentTransaction)
+- `src/lib/db/models/` - Mongoose models (Tenant, Product, Coupon, CheckoutSession, Order, User, PaymentTransaction)
 - `src/lib/auth/` - NextAuth config + role guards
 - `src/lib/validators/` - Zod schemas
 - `src/lib/utils/` - Chilean utilities (RUT, CLP formatting)
@@ -42,6 +42,9 @@ Multi-tenant SaaS enabling Chilean small businesses to expose product catalogs t
 - RUT validated with modulo-11 before storage
 - UCP sessions expire after 30 minutes (TTL index)
 - Commission calculated as integer: `Math.round(total * rate)`
+- Product `compareAtPrice` is display-only (strikethrough original price); checkout uses `price`
+- Coupon discounts reduce the taxable base: `calculateTax(lineItemsTotal - discount, ...)`
+- Coupon usage incremented atomically on order completion with `$lt: maxUsageCount` guard
 - Server Actions for UI mutations, Route Handlers for external APIs
 - All UCP responses follow spec at https://ucp.dev/specification/checkout-rest/
 

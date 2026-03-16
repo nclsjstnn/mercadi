@@ -18,6 +18,7 @@ export const buyerSchema = z.object({
 
 export const fulfillmentSchema = z.object({
   type: z.enum(["shipping", "pickup"]),
+  shipping_option_id: z.string().optional(),
   address: z
     .object({
       street: z.string().min(1),

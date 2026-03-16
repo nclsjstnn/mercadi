@@ -10,10 +10,10 @@ export async function switchTenant(tenantId: string) {
 
   await connectDB();
 
-  // Verify the tenant belongs to this user
+  // Verify the tenant belongs to this user (owner or collaborator)
   const tenant = await Tenant.findOne({
     _id: tenantId,
-    ownerId: session.user.id,
+    $or: [{ ownerId: session.user.id }, { collaborators: session.user.id }],
   });
 
   if (!tenant) {

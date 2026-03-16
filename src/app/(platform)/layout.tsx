@@ -16,7 +16,7 @@ export default async function PlatformLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  let tenants: { _id: string; name: string; slug: string }[] = [];
+  let tenants: { _id: string; name: string; slug: string; isOwner: boolean }[] = [];
   let canCreateMore = false;
   let plan: PlanType = "free";
 
@@ -24,15 +24,19 @@ export default async function PlatformLayout({
     await connectDB();
     const dbUser = await User.findById(session.user.id).select("plan").lean();
     plan = ((dbUser?.plan as string) || "free") as PlanType;
-    const rawTenants = await Tenant.find({ ownerId: session.user.id })
-      .select("_id name slug")
+    const rawTenants = await Tenant.find({
+      $or: [{ ownerId: session.user.id }, { collaborators: session.user.id }],
+    })
+      .select("_id name slug ownerId")
       .lean();
     tenants = rawTenants.map((t) => ({
       _id: t._id.toString(),
       name: t.name,
       slug: t.slug,
+      isOwner: t.ownerId.toString() === session.user!.id,
     }));
-    canCreateMore = tenants.length < PLAN_LIMITS[plan].maxTenants;
+    const ownedCount = tenants.filter((t) => t.isOwner).length;
+    canCreateMore = ownedCount < PLAN_LIMITS[plan].maxTenants;
   }
 
   return (

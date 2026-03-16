@@ -1,6 +1,6 @@
 export const PLAN_LIMITS = {
-  free: { maxTenants: 1 },
-  pro: { maxTenants: 3 },
+  free: { maxTenants: 1, customDomain: false, removeBranding: false, maxCollaboratorsPerTenant: 0 },
+  pro: { maxTenants: 3, customDomain: true, removeBranding: true, maxCollaboratorsPerTenant: 5 },
 } as const;
 
 export type PlanType = keyof typeof PLAN_LIMITS;
@@ -16,6 +16,7 @@ export const PLAN_DETAILS = {
       "Productos ilimitados",
       "Catálogo UCP",
       "Proveedor de pago mock",
+      "Tienda publica con branding Mercadi",
     ],
   },
   pro: {
@@ -29,6 +30,9 @@ export const PLAN_DETAILS = {
       "Catálogo UCP",
       "Proveedores de pago reales (Transbank, MercadoPago)",
       "Soporte prioritario",
+      "Tienda publica sin branding",
+      "Dominio personalizado",
+      "Hasta 5 colaboradores por negocio",
     ],
   },
 } as const;

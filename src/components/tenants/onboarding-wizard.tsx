@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { REGIONES } from "@/lib/config/chile-geo";
+import { isReservedSubdomain } from "@/lib/config/reserved-subdomains";
 import { Building2, FileText, CheckCircle2 } from "lucide-react";
 
 const STEPS = [
@@ -31,6 +32,7 @@ export default function OnboardingWizard() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [slugError, setSlugError] = useState("");
   const [data, setData] = useState({
     name: "",
     slug: "",
@@ -42,15 +44,28 @@ export default function OnboardingWizard() {
 
   function update(field: string, value: string) {
     setData((prev) => ({ ...prev, [field]: value }));
+    if (field === "slug") {
+      setSlugError(
+        isReservedSubdomain(value.toLowerCase())
+          ? "Este nombre está reservado y no puede usarse"
+          : ""
+      );
+    }
     if (field === "name" && !data.slug) {
+      const autoSlug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/-+$/, "");
       setData((prev) => ({
         ...prev,
         [field]: value,
-        slug: value
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/-+$/, ""),
+        slug: autoSlug,
       }));
+      setSlugError(
+        isReservedSubdomain(autoSlug)
+          ? "Este nombre está reservado y no puede usarse"
+          : ""
+      );
     }
   }
 
@@ -148,6 +163,9 @@ export default function OnboardingWizard() {
                     placeholder="mi-tienda"
                   />
                 </div>
+                {slugError && (
+                  <p className="text-sm text-destructive">{slugError}</p>
+                )}
               </div>
             </>
           )}
@@ -238,7 +256,7 @@ export default function OnboardingWizard() {
               <div />
             )}
             {step < STEPS.length - 1 ? (
-              <Button onClick={() => setStep(step + 1)}>Siguiente</Button>
+              <Button onClick={() => setStep(step + 1)} disabled={!!slugError}>Siguiente</Button>
             ) : (
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? "Creando..." : "Crear Negocio"}

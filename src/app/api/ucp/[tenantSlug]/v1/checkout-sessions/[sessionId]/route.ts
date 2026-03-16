@@ -3,6 +3,8 @@ import { validateUCPApiKey } from "@/lib/auth/guards";
 import { parseUCPHeaders } from "@/lib/ucp/headers";
 import { updateCheckoutSchema } from "@/lib/validators/checkout";
 import { getSession, updateSession } from "@/lib/ucp/checkout-manager";
+import { Tenant } from "@/lib/db/models/tenant";
+import type { IShippingOption } from "@/lib/db/models/tenant";
 
 export async function GET(
   request: NextRequest,
@@ -18,6 +20,11 @@ export async function GET(
     }
 
     const session = await getSession(sessionId);
+
+    const tenantDoc = await Tenant.findById(session.tenantId);
+    const availableShippingOptions = (tenantDoc?.shipping?.options || [])
+      .filter((o: IShippingOption) => o.enabled)
+      .map((o: IShippingOption) => ({ id: o.id, name: o.name, price: o.price, type: o.type }));
 
     return NextResponse.json({
       checkout_session_id: session.sessionId,
@@ -44,6 +51,8 @@ export async function GET(
         total: session.totals.total,
       },
       currency: session.currency,
+      fulfillment_required: session.fulfillmentRequired,
+      available_shipping_options: availableShippingOptions,
       expires_at: session.expiresAt.toISOString(),
     });
   } catch (error) {
@@ -77,7 +86,17 @@ export async function PUT(
       );
     }
 
-    const session = await updateSession(sessionId, parsed.data);
+    const updateData = {
+      ...parsed.data,
+      fulfillment: parsed.data.fulfillment
+        ? {
+            type: parsed.data.fulfillment.type,
+            shippingOptionId: parsed.data.fulfillment.shipping_option_id,
+            address: parsed.data.fulfillment.address,
+          }
+        : undefined,
+    };
+    const session = await updateSession(sessionId, updateData);
 
     return NextResponse.json({
       checkout_session_id: session.sessionId,

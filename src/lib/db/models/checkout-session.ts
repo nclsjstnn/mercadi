@@ -18,6 +18,7 @@ export interface IBuyer {
 
 export interface IFulfillment {
   type: "shipping" | "pickup";
+  shippingOptionId?: string;
   address?: {
     street: string;
     comuna: string;
@@ -28,6 +29,7 @@ export interface IFulfillment {
 
 export interface ITotals {
   subtotal: number;
+  discount: number;
   tax: number;
   shipping: number;
   total: number;
@@ -47,7 +49,10 @@ export interface ICheckoutSession extends Document {
   lineItems: ILineItem[];
   buyer?: IBuyer;
   fulfillment?: IFulfillment;
+  fulfillmentRequired: boolean;
   totals: ITotals;
+  couponCode?: string;
+  couponId?: string;
   currency: string;
   idempotencyKey?: string;
   ucpAgent?: string;
@@ -94,6 +99,7 @@ const CheckoutSessionSchema = new Schema<ICheckoutSession>(
         type: String,
         enum: ["shipping", "pickup"],
       },
+      shippingOptionId: { type: String },
       address: {
         street: { type: String },
         comuna: { type: String },
@@ -101,12 +107,16 @@ const CheckoutSessionSchema = new Schema<ICheckoutSession>(
         postalCode: { type: String },
       },
     },
+    fulfillmentRequired: { type: Boolean, default: true },
     totals: {
       subtotal: { type: Number, default: 0 },
+      discount: { type: Number, default: 0 },
       tax: { type: Number, default: 0 },
       shipping: { type: Number, default: 0 },
       total: { type: Number, default: 0 },
     },
+    couponCode: { type: String, default: null },
+    couponId: { type: String, default: null },
     currency: { type: String, default: "CLP" },
     idempotencyKey: { type: String },
     ucpAgent: { type: String },

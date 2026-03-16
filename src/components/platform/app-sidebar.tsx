@@ -35,6 +35,7 @@ import {
   ChevronsUpDown,
   LogOut,
   Store,
+  Ticket,
   User as UserIcon,
 } from "lucide-react";
 import { TenantSwitcher } from "./tenant-switcher";
@@ -42,6 +43,8 @@ import { TenantSwitcher } from "./tenant-switcher";
 const tenantNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/products", label: "Productos", icon: Package },
+  { href: "/dashboard/store", label: "Tienda", icon: Store },
+  { href: "/dashboard/coupons", label: "Cupones", icon: Ticket },
   { href: "/dashboard/orders", label: "Pedidos", icon: ShoppingCart },
   { href: "/dashboard/payments", label: "Pagos", icon: CreditCard },
   { href: "/dashboard/settings", label: "Configuración", icon: Settings },
@@ -59,6 +62,7 @@ interface TenantInfo {
   _id: string;
   name: string;
   slug: string;
+  isOwner: boolean;
 }
 
 interface AppSidebarProps {

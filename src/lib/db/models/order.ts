@@ -16,6 +16,7 @@ export interface IOrder extends Document {
   buyer: IBuyer;
   fulfillment?: IFulfillment;
   totals: ITotals;
+  couponCode?: string;
   currency: string;
   commission: ICommission;
   status: "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
@@ -49,6 +50,7 @@ const OrderSchema = new Schema<IOrder>(
         type: String,
         enum: ["shipping", "pickup"],
       },
+      shippingOptionId: { type: String },
       address: {
         street: { type: String },
         comuna: { type: String },
@@ -58,10 +60,12 @@ const OrderSchema = new Schema<IOrder>(
     },
     totals: {
       subtotal: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
       tax: { type: Number, required: true },
       shipping: { type: Number, default: 0 },
       total: { type: Number, required: true },
     },
+    couponCode: { type: String, default: null },
     currency: { type: String, default: "CLP" },
     commission: {
       rate: { type: Number, required: true },

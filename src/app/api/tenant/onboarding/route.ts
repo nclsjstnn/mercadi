@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
 import { User } from "@/lib/db/models/user";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
+import { isReservedSubdomain } from "@/lib/config/reserved-subdomains";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +20,13 @@ export async function POST(request: NextRequest) {
     if (!name || !slug || !rut || !legalName || !comuna || !region) {
       return NextResponse.json(
         { error: "Todos los campos son requeridos" },
+        { status: 400 }
+      );
+    }
+
+    if (isReservedSubdomain(slug)) {
+      return NextResponse.json(
+        { error: "Este nombre está reservado y no puede usarse" },
         { status: 400 }
       );
     }

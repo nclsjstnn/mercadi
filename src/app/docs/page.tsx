@@ -14,6 +14,9 @@ import {
   ChevronRight,
   Terminal,
   Copy,
+  Truck,
+  Tag,
+  Ticket,
 } from "lucide-react";
 
 export const metadata = {
@@ -152,7 +155,9 @@ export default function DocsPage() {
             <NavItem href="#register" step="1" label="Crear cuenta" />
             <NavItem href="#onboarding" step="2" label="Registrar negocio" />
             <NavItem href="#products" step="3" label="Agregar productos" />
-            <NavItem href="#ucp-settings" step="4" label="Configurar UCP" />
+            <NavItem href="#shipping" step="4" label="Configurar envio" />
+            <NavItem href="#promotions" step="5" label="Promociones y cupones" />
+            <NavItem href="#ucp-settings" step="6" label="Configurar UCP" />
 
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               API UCP
@@ -165,7 +170,7 @@ export default function DocsPage() {
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Gemini
             </p>
-            <NavItem href="#gemini-setup" step="5" label="Configurar Gemini" />
+            <NavItem href="#gemini-setup" step="7" label="Configurar Gemini" />
             <NavItem href="#gemini-functions" label="Function declarations" />
             <NavItem href="#gemini-example" label="Ejemplo completo" />
             <NavItem href="#gemini-test" label="Probar con demo" />
@@ -459,6 +464,12 @@ export default function DocsPage() {
                       <li>
                         <strong>Imagenes:</strong> URLs de imagenes
                       </li>
+                      <li>
+                        <strong>Intangible:</strong> Marca el producto como
+                        digital, servicio o gift card. Si todos los productos
+                        del carrito son intangibles, no se requiere informacion
+                        de envio en el checkout.
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -483,11 +494,150 @@ export default function DocsPage() {
               </div>
             </section>
 
-            {/* Step 4: UCP Settings */}
-            <section id="ucp-settings" className="scroll-mt-24 space-y-4">
+            {/* Step 4: Shipping */}
+            <section id="shipping" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
                 step="4"
+                icon={Truck}
+                title="Configurar envio"
+              />
+              <p className="text-muted-foreground">
+                En{" "}
+                <strong>Dashboard → Configuracion → Envio</strong>, configura
+                los metodos de envio y retiro disponibles para tus clientes.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Opciones de envio</h4>
+                <p className="text-sm text-muted-foreground">
+                  Puedes crear hasta 5 opciones de envio. Cada opcion tiene:
+                </p>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li>
+                    <strong>Nombre:</strong> Nombre visible (ej: {`"Envio estandar"`}, {`"Retiro en tienda"`})
+                  </li>
+                  <li>
+                    <strong>Precio:</strong> Precio fijo en CLP como entero (ej: 3990)
+                  </li>
+                  <li>
+                    <strong>Tipo:</strong>{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">shipping</code> (envio a domicilio) o{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">pickup</code> (retiro en tienda)
+                  </li>
+                  <li>
+                    <strong>Habilitada:</strong> Toggle para activar/desactivar sin eliminar
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm">
+                  <strong>Importante:</strong> El costo de envio se agrega al
+                  total cuando el comprador selecciona una opcion de envio
+                  durante el checkout. La comision de la plataforma se calcula
+                  sobre el total incluyendo envio.
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Productos intangibles</h4>
+                <p className="text-sm text-muted-foreground">
+                  Si todos los productos en un carrito estan marcados como{" "}
+                  <strong>intangibles</strong> (digital, servicio, gift card),
+                  el checkout no requiere informacion de envio. El campo{" "}
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                    fulfillment_required
+                  </code>{" "}
+                  sera{" "}
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                    false
+                  </code>{" "}
+                  en la respuesta de la API. Si el carrito tiene al menos un
+                  producto fisico, se requiere envio.
+                </p>
+              </div>
+            </section>
+
+            {/* Step 5: Promotions & Coupons */}
+            <section id="promotions" className="scroll-mt-24 space-y-4">
+              <SectionHeading
+                id=""
+                step="5"
+                icon={Tag}
+                title="Promociones y cupones"
+              />
+              <p className="text-muted-foreground">
+                Mercadi ofrece dos mecanismos de descuento para impulsar tus
+                ventas: <strong>precios de oferta</strong> por producto y{" "}
+                <strong>cupones de descuento</strong> por codigo.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-6">
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-primary" />
+                    Precio de oferta (compareAtPrice)
+                  </h4>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Al editar un producto, puedes establecer un{" "}
+                    <strong>precio original</strong> opcional. El cliente paga el
+                    precio de venta y ve el precio original tachado con el
+                    porcentaje de descuento. Este campo es puramente visual — el
+                    checkout siempre usa el precio de venta.
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm text-muted-foreground list-disc pl-5">
+                    <li>
+                      Ve a <strong>Dashboard → Productos → Editar</strong>
+                    </li>
+                    <li>
+                      Completa el campo <strong>Precio original</strong> (debe
+                      ser mayor al precio de venta)
+                    </li>
+                    <li>
+                      La tienda mostrara automaticamente el badge de descuento y
+                      el precio tachado
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Ticket className="h-4 w-4 text-primary" />
+                    Cupones de descuento
+                  </h4>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Crea codigos de descuento que tus clientes pueden aplicar en
+                    el checkout. Soporta descuentos de <strong>monto fijo (CLP)</strong>{" "}
+                    o <strong>porcentaje</strong>.
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm text-muted-foreground list-disc pl-5">
+                    <li>
+                      Ve a <strong>Dashboard → Cupones → Nuevo Cupon</strong>
+                    </li>
+                    <li>
+                      Configura: codigo, tipo de descuento, valor, monto minimo
+                      de compra (opcional), usos maximos (opcional) y fecha de
+                      expiracion (opcional)
+                    </li>
+                    <li>
+                      Los clientes ingresan el codigo en el checkout y el
+                      descuento se aplica al subtotal antes de impuestos
+                    </li>
+                    <li>
+                      El IVA y la comision se calculan sobre el monto con
+                      descuento
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 6: UCP Settings */}
+            <section id="ucp-settings" className="scroll-mt-24 space-y-4">
+              <SectionHeading
+                id=""
+                step="6"
                 icon={Settings}
                 title="Configurar UCP"
               />
@@ -656,7 +806,7 @@ export default function DocsPage() {
                   <FlowStep
                     number="3"
                     title="Agregar envio (PUT)"
-                    description="Envias tipo (shipping/pickup) y direccion si corresponde."
+                    description="Envias tipo (shipping/pickup), opcion de envio y direccion. Si el carrito es 100% intangible (fulfillment_required: false), puedes saltar este paso."
                   />
                   <FlowStep
                     number="4"
@@ -717,6 +867,21 @@ export default function DocsPage() {
     "total": 119980
   },
   "currency": "CLP",
+  "fulfillment_required": true,
+  "available_shipping_options": [
+    {
+      "id": "ship_abc12345",
+      "name": "Envio estandar",
+      "price": 3990,
+      "type": "shipping"
+    },
+    {
+      "id": "ship_xyz98765",
+      "name": "Retiro en tienda",
+      "price": 0,
+      "type": "pickup"
+    }
+  ],
   "expires_at": "2026-03-15T10:30:00.000Z"
 }`}
                   </CodeBlock>
@@ -736,7 +901,15 @@ export default function DocsPage() {
                 <div className="p-6">
                   <p className="text-sm text-muted-foreground">
                     Obtiene el estado actual de una sesion de checkout. Retorna
-                    los mismos campos que el POST, mas{" "}
+                    los mismos campos que el POST (incluyendo{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                      fulfillment_required
+                    </code>{" "}
+                    y{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                      available_shipping_options
+                    </code>
+                    ), mas{" "}
                     <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
                       buyer
                     </code>{" "}
@@ -772,6 +945,7 @@ export default function DocsPage() {
   },
   "fulfillment": {
     "type": "shipping",
+    "shipping_option_id": "ship_abc12345",
     "address": {
       "street": "Av. Providencia 1234",
       "comuna": "Providencia",
@@ -780,6 +954,13 @@ export default function DocsPage() {
   }
 }`}
                   </CodeBlock>
+                  <div className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+                    <strong>shipping_option_id</strong> (opcional): ID de una
+                    opcion de envio del tenant. Si se incluye, el precio de envio
+                    se agrega automaticamente a los totales. El{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">type</code>{" "}
+                    debe coincidir con el tipo de la opcion (shipping o pickup).
+                  </div>
                 </div>
               </div>
 
@@ -841,7 +1022,7 @@ export default function DocsPage() {
             <section id="gemini-setup" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="5"
+                step="7"
                 icon={Bot}
                 title="Configurar Gemini"
               />
@@ -938,7 +1119,13 @@ export default function DocsPage() {
                   </h4>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Actualiza la sesion con datos del comprador (email, nombre)
-                    y/o metodo de entrega (shipping/pickup + direccion).
+                    y/o metodo de entrega (shipping/pickup + direccion +
+                    shipping_option_id). Si se incluye un{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                      shipping_option_id
+                    </code>
+                    , el costo de envio se agrega a los totales automaticamente.
+                    Si el carrito es 100% intangible, el envio no es requerido.
                   </p>
                 </div>
 
@@ -1037,6 +1224,10 @@ const FUNCTION_DECLARATIONS: FunctionDeclaration[] = [
               type: SchemaType.STRING,
               format: "enum",
               enum: ["shipping", "pickup"],
+            },
+            shipping_option_id: {
+              type: SchemaType.STRING,
+              description: "ID of a shipping option from available_shipping_options",
             },
             address: {
               type: SchemaType.OBJECT,
@@ -1277,6 +1468,107 @@ async function executeUCPFunction(name: string, args: any) {
                 </ChatBubble>
               </div>
             </section>
+            {/* Public Storefront */}
+            <section className="space-y-6">
+              <SectionHeading
+                id="storefront"
+                icon={Store}
+                title="Tienda Publica"
+              />
+              <p className="text-muted-foreground">
+                Cada negocio puede activar una tienda publica accesible desde
+                un subdominio <code className="text-sm font-mono bg-muted px-1 rounded">slug.mercadi.cl</code>.
+                Es una experiencia ecommerce completa: catalogo, carrito, checkout y pago.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Activacion</h4>
+                <div className="space-y-3">
+                  <FlowStep
+                    number="1"
+                    title="Ir a Dashboard → Tienda"
+                    description="Habilita la tienda publica desde el toggle."
+                  />
+                  <FlowStep
+                    number="2"
+                    title="Personalizar tema"
+                    description="Configura colores primario, secundario y de acento. Agrega tu logo y favicon."
+                  />
+                  <FlowStep
+                    number="3"
+                    title="Visitar tu tienda"
+                    description="Accede desde slug.mercadi.cl (o slug.localhost:3000 en desarrollo)."
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Plantilla Liquid</h4>
+                <p className="text-sm text-muted-foreground">
+                  Personaliza el layout completo de tu tienda con plantillas Liquid.
+                  Variables disponibles:
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="py-2 pr-4 font-medium">Variable</th>
+                        <th className="py-2 font-medium">Descripcion</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-muted-foreground">
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">{"{{ business_name }}"}</td><td>Nombre del negocio</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">{"{{ theme.primaryColor }}"}</td><td>Color primario</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">{"{{ theme.secondaryColor }}"}</td><td>Color secundario</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">{"{{ theme.accentColor }}"}</td><td>Color de acento</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">{"{{ content }}"}</td><td>Contenido de la pagina (requerido)</td></tr>
+                      <tr><td className="py-2 pr-4 font-mono">{"{{ branding }}"}</td><td>true si muestra branding Mercadi (plan Free)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Dominio personalizado (Pro)</h4>
+                <p className="text-sm text-muted-foreground">
+                  Los usuarios Pro pueden conectar un dominio propio. Se requieren
+                  los siguientes registros DNS:
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="py-2 pr-4 font-medium">Tipo</th>
+                        <th className="py-2 pr-4 font-medium">Nombre</th>
+                        <th className="py-2 font-medium">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono text-muted-foreground">
+                      <tr className="border-b"><td className="py-2 pr-4">A</td><td className="py-2 pr-4">@</td><td>76.76.21.21</td></tr>
+                      <tr><td className="py-2 pr-4">CNAME</td><td className="py-2 pr-4">www</td><td>cname.vercel-dns.com</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Flujo de checkout</h4>
+                <div className="space-y-3">
+                  <FlowStep number="1" title="Agregar productos al carrito" description="El carrito se almacena en localStorage por tenant." />
+                  <FlowStep number="2" title="Ir al checkout" description="Completa datos de comprador, selecciona opcion de envio y direccion. Para productos intangibles, el envio no es requerido." />
+                  <FlowStep number="3" title="Pagar" description="Se usa el proveedor de pago mock. En produccion se conecta Transbank o MercadoPago." />
+                  <FlowStep number="4" title="Confirmacion" description="Se muestra el detalle del pedido y numero de orden." />
+                </div>
+              </div>
+
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Branding por plan:</strong> En el plan Free, el footer muestra
+                  &quot;Powered by Mercadi.cl&quot;. En el plan Pro, muestra el nombre del negocio.
+                </p>
+              </div>
+            </section>
+
           </div>
         </main>
       </div>

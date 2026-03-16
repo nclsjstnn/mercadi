@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/platform/page-header";
 import { EmptyState } from "@/components/platform/empty-state";
 import ProductTable from "@/components/products/product-table";
-import { Package, Plus } from "lucide-react";
+import { Package, Plus, Upload } from "lucide-react";
 
 export default async function ProductsPage() {
   const session = await requireTenant();
@@ -25,6 +25,7 @@ export default async function ProductsPage() {
     title: p.title,
     sku: p.sku,
     price: p.price,
+    compareAtPrice: p.compareAtPrice ?? undefined,
     stock: p.stock,
     status: p.status,
     category: p.category,
@@ -40,12 +41,20 @@ export default async function ProductsPage() {
           { label: "Productos" },
         ]}
       >
-        <Link href="/dashboard/products/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Producto
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/products/import">
+            <Button variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Importar desde Google Sheets
+            </Button>
+          </Link>
+          <Link href="/dashboard/products/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Producto
+            </Button>
+          </Link>
+        </div>
       </PageHeader>
 
       {serialized.length === 0 ? (
