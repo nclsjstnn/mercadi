@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -29,10 +28,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <Providers>
           {children}
           <Toaster />
-        </Providers>
       </body>
     </html>
   );

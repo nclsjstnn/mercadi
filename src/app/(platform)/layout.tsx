@@ -7,6 +7,7 @@ import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/platform/app-sidebar";
 import { Separator } from "@/components/ui/separator";
+import Providers from "@/components/providers";
 
 export default async function PlatformLayout({
   children,
@@ -40,6 +41,7 @@ export default async function PlatformLayout({
   }
 
   return (
+    <Providers>
     <SidebarProvider>
       <AppSidebar
         user={session.user}
@@ -59,5 +61,6 @@ export default async function PlatformLayout({
         <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
+    </Providers>
   );
 }
