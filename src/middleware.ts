@@ -30,7 +30,7 @@ const BYPASS_PREFIXES = [
   "/favicon.ico",
 ];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const hostnameWithoutPort = hostname.split(":")[0];
 
