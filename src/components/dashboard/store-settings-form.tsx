@@ -16,12 +16,14 @@ interface StoreSettingsFormProps {
     faviconUrl: string;
   };
   storeUrl: string;
+  protocol: string;
 }
 
 export function StoreSettingsForm({
   enabled: initialEnabled,
   theme: initialTheme,
   storeUrl,
+  protocol,
 }: StoreSettingsFormProps) {
   const [enabled, setEnabled] = useState(initialEnabled);
   const [theme, setTheme] = useState(initialTheme);
@@ -49,7 +51,7 @@ export function StoreSettingsForm({
           <p className="text-sm text-muted-foreground">
             Habilita tu tienda en{" "}
             <a
-              href={`http://${storeUrl}`}
+              href={`${protocol}://${storeUrl}`}
               target="_blank"
               className="text-primary underline"
             >

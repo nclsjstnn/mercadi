@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { requireTenant } from "@/lib/auth/guards";
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
@@ -22,11 +23,14 @@ export default async function StoreSettingsPage() {
   const plan = (owner?.plan || "free") as PlanType;
   const isPro = PLAN_LIMITS[plan].customDomain;
 
-  const baseDomain = process.env.STOREFRONT_BASE_DOMAIN || "localhost";
-  const storeUrl =
-    baseDomain === "localhost"
-      ? `${tenant.slug}.localhost:3000`
-      : `${tenant.slug}.${baseDomain}`;
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const hostWithoutPort = host.split(":")[0];
+  const isLocalhost = hostWithoutPort === "localhost";
+  const protocol = isLocalhost ? "http" : "https";
+  const storeUrl = isLocalhost
+    ? `${tenant.slug}.localhost:3000`
+    : `${tenant.slug}.${host}`;
 
   const store = tenant.store || {
     enabled: false,
@@ -64,6 +68,7 @@ export default async function StoreSettingsPage() {
             faviconUrl: store.theme?.faviconUrl || "",
           }}
           storeUrl={storeUrl}
+          protocol={protocol}
         />
       </div>
 
