@@ -1,65 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Subdomain routing middleware.
+ * Subdomain routing for tenant storefronts.
  * Rewrites `{tenantSlug}.localhost:3000` → `/store/{tenantSlug}/...`
- * so tenant storefronts are accessible via subdomains.
+ *
+ * Production subdomain routing (*.mercadi.cl) is handled by
+ * vercel.json rewrites — no middleware needed on Vercel.
  */
-
-// Hostnames that should serve the main platform (not a tenant store)
-const PLATFORM_HOSTS = new Set([
-  "localhost",
-  "mercadi.cl",
-  "www.mercadi.cl",
-]);
-
-// Paths that should never be rewritten (platform routes)
-const BYPASS_PREFIXES = [
-  "/api/",
-  "/login",
-  "/register",
-  "/admin",
-  "/dashboard",
-  "/onboarding",
-  "/profile",
-  "/plans",
-  "/test",
-  "/docs",
-  "/store/",
-  "/_next/",
-  "/favicon.ico",
-];
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const hostnameWithoutPort = hostname.split(":")[0];
 
-  // If it's a known platform host, don't rewrite
-  if (PLATFORM_HOSTS.has(hostnameWithoutPort)) {
+  // Only handle *.localhost subdomains (local dev)
+  if (!hostnameWithoutPort.endsWith(".localhost")) {
     return NextResponse.next();
   }
 
-  // Extract subdomain: e.g. "chalaszico.localhost" → "chalaszico"
-  // Works for both local dev (*.localhost) and production (*.mercadi.cl)
-  let tenantSlug: string | null = null;
-
-  if (hostnameWithoutPort.endsWith(".localhost")) {
-    tenantSlug = hostnameWithoutPort.replace(".localhost", "");
-  } else if (hostnameWithoutPort.endsWith(".mercadi.cl")) {
-    const sub = hostnameWithoutPort.replace(".mercadi.cl", "");
-    if (sub !== "www") {
-      tenantSlug = sub;
-    }
-  }
-
+  const tenantSlug = hostnameWithoutPort.replace(".localhost", "");
   if (!tenantSlug) {
     return NextResponse.next();
   }
 
   const { pathname } = request.nextUrl;
 
-  // Don't rewrite platform/internal paths
-  if (BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+  // Don't rewrite API, auth, or internal paths
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/store/")
+  ) {
     return NextResponse.next();
   }
 
@@ -71,7 +41,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

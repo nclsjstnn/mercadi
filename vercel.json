@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<slug>[^.]+)\\.mercadi\\.cl"
+        }
+      ],
+      "destination": "/store/:slug/:path*"
+    }
+  ]
+}
