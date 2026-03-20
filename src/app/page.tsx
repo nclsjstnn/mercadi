@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import {
@@ -21,12 +22,15 @@ export default async function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Store className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-bold">Mercadi.cl</span>
-          </div>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/mercadi.png"
+              alt="Mercadi"
+              width={140}
+              height={36}
+              priority
+            />
+          </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <a
               href="#how-it-works"
@@ -69,7 +73,12 @@ export default async function HomePage() {
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">Crear Cuenta</Button>
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 text-black font-semibold hover:bg-amber-600 shadow-sm"
+                  >
+                    Inscribete gratis
+                  </Button>
                 </Link>
               </>
             )}
@@ -99,15 +108,21 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {isLoggedIn ? (
                 <Link href={dashboardUrl}>
-                  <Button size="lg" className="gap-2">
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-amber-500 text-black font-semibold text-lg hover:bg-amber-600 shadow-sm px-8"
+                  >
                     Ir al Dashboard
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
                 <Link href="/register">
-                  <Button size="lg" className="gap-2">
-                    Comenzar Gratis
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-amber-500 text-black font-semibold text-lg hover:bg-amber-600 shadow-sm px-8"
+                  >
+                    Prueba una tienda gratis!
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -210,15 +225,21 @@ export default async function HomePage() {
               </p>
               {isLoggedIn ? (
                 <Link href={dashboardUrl}>
-                  <Button size="lg" className="mt-8 gap-2">
+                  <Button
+                    size="lg"
+                    className="mt-8 gap-2 bg-amber-500 text-black font-semibold hover:bg-amber-600 shadow-sm px-8"
+                  >
                     Ir al Dashboard
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
                 <Link href="/register">
-                  <Button size="lg" className="mt-8 gap-2">
-                    Crear Cuenta Gratis
+                  <Button
+                    size="lg"
+                    className="mt-8 gap-2 bg-amber-500 text-black font-semibold hover:bg-amber-600 shadow-sm px-8"
+                  >
+                    Abrir mi tienda
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -232,11 +253,13 @@ export default async function HomePage() {
       <footer className="border-t py-12">
         <div className="container mx-auto grid gap-8 px-4 md:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Store className="h-3.5 w-3.5" />
-              </div>
-              <span className="font-bold">Mercadi.cl</span>
+            <div className="flex items-center">
+              <Image
+                src="/mercadi.png"
+                alt="Mercadi"
+                width={120}
+                height={32}
+              />
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
               Comercio inteligente para Chile. Conecta tu negocio con agentes
