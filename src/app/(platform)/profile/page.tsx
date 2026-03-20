@@ -103,6 +103,7 @@ export default async function ProfilePage() {
                   Aún no tienes negocios registrados.
                 </p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -135,6 +136,7 @@ export default async function ProfilePage() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>

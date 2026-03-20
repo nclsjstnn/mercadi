@@ -24,7 +24,7 @@ export default async function ConfirmationPage({
   if (!order) return notFound();
 
   return (
-    <div className="mx-auto max-w-lg py-8 text-center">
+    <div className="mx-auto max-w-lg px-4 py-8 text-center">
       <div
         className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full"
         style={{ backgroundColor: "var(--store-primary)", opacity: 0.1 }}
@@ -34,7 +34,7 @@ export default async function ConfirmationPage({
           style={{ color: "var(--store-primary)" }}
         />
       </div>
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">
+      <h1 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">
         Pedido confirmado!
       </h1>
       <p className="mb-8 text-gray-500">
@@ -42,7 +42,7 @@ export default async function ConfirmationPage({
         ha sido procesado exitosamente.
       </p>
 
-      <div className="rounded-xl border bg-white p-6 text-left">
+      <div className="rounded-xl border bg-white p-4 sm:p-6 text-left">
         <h2 className="mb-4 text-lg font-bold text-gray-900">
           Detalle del pedido
         </h2>

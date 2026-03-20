@@ -69,7 +69,7 @@ function SectionHeading({
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Icon className="h-5 w-5" />
         </div>
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-xl font-bold sm:text-2xl">{title}</h2>
       </div>
       <div className="mt-3 h-px bg-border" />
     </div>
@@ -140,7 +140,7 @@ export default function DocsPage() {
         </div>
       </header>
 
-      <div className="container mx-auto flex flex-1 gap-0 lg:gap-8">
+      <div className="container mx-auto flex flex-1 gap-0 px-4 lg:gap-8">
         {/* Sidebar navigation */}
         <aside className="hidden w-64 shrink-0 lg:block">
           <nav className="sticky top-20 space-y-1 border-r py-8 pr-4">
@@ -188,7 +188,7 @@ export default function DocsPage() {
                 <BookOpen className="h-4 w-4" />
                 Guia completa
               </div>
-              <h1 className="mt-4 text-4xl font-bold tracking-tight">
+              <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 Documentacion de Mercadi.cl
               </h1>
               <p className="mt-4 text-lg text-muted-foreground">

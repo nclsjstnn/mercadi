@@ -70,10 +70,10 @@ export default function TestPage() {
           </p>
         </div>
 
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
           <label className="text-sm font-medium">Negocio:</label>
           <Select value={selectedSlug} onValueChange={(v) => v && setSelectedSlug(v)}>
-            <SelectTrigger className="w-[250px]">
+            <SelectTrigger className="w-full sm:w-[250px]">
               <SelectValue placeholder="Seleccionar negocio" />
             </SelectTrigger>
             <SelectContent>

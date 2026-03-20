@@ -113,6 +113,7 @@ export default async function TenantDashboard() {
                 Aun no hay pedidos
               </p>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -141,6 +142,7 @@ export default async function TenantDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

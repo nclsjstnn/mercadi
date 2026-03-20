@@ -54,7 +54,7 @@ function PaymentForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-md px-4">
       <h1 className="mb-8 text-2xl font-bold text-gray-900">Pago</h1>
 
       <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
@@ -68,7 +68,7 @@ function PaymentForm() {
       )}
 
       {/* Order summary */}
-      <div className="mb-6 rounded-xl border bg-white p-6 text-sm">
+      <div className="mb-6 rounded-xl border bg-white p-4 sm:p-6 text-sm">
         <div className="space-y-1">
           <div className="flex justify-between">
             <span className="text-gray-500">Subtotal</span>
@@ -87,7 +87,7 @@ function PaymentForm() {
         </div>
       </div>
 
-      <form onSubmit={handlePay} className="rounded-xl border bg-white p-6">
+      <form onSubmit={handlePay} className="rounded-xl border bg-white p-4 sm:p-6">
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">

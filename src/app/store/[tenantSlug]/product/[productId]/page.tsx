@@ -77,7 +77,7 @@ export default async function StorePDP({
             {product.category}
           </p>
         )}
-        <h1 className="text-3xl font-bold text-gray-900">{product.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{product.title}</h1>
         <div className="mt-3 flex items-center gap-3">
           {hasDiscount && (
             <span className="text-xl text-gray-400 line-through">
@@ -85,7 +85,7 @@ export default async function StorePDP({
             </span>
           )}
           <span
-            className="text-3xl font-bold"
+            className="text-2xl font-bold sm:text-3xl"
             style={{ color: "var(--store-primary)" }}
           >
             {formatPrice(product.price, tenant.locale.currency)}

@@ -75,7 +75,7 @@ export default async function AdminSettingsPage() {
 
 function SettingRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border px-4 py-2.5">
+    <div className="flex flex-wrap items-center justify-between gap-1 rounded-lg border px-4 py-2.5">
       <span className="text-sm font-medium">{label}</span>
       <span className="text-sm text-muted-foreground">{value}</span>
     </div>

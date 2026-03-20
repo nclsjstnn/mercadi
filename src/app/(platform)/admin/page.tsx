@@ -91,6 +91,7 @@ export default async function AdminDashboard() {
                 Sin negocios registrados
               </p>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -120,6 +121,7 @@ export default async function AdminDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -139,6 +141,7 @@ export default async function AdminDashboard() {
                 Sin pedidos
               </p>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -163,6 +166,7 @@ export default async function AdminDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

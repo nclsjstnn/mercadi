@@ -165,7 +165,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl px-4">
       <h1 className="mb-8 text-2xl font-bold text-gray-900">Checkout</h1>
 
       {error && (
@@ -176,7 +176,7 @@ export default function CheckoutPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Buyer info */}
-        <div className="rounded-xl border bg-white p-6">
+        <div className="rounded-xl border bg-white p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-bold text-gray-900">
             Datos del comprador
           </h2>
@@ -232,7 +232,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Shipping */}
-        <div className="rounded-xl border bg-white p-6">
+        <div className="rounded-xl border bg-white p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-bold text-gray-900">
             Direccion de envio
           </h2>
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Summary */}
-        <div className="rounded-xl border bg-white p-6">
+        <div className="rounded-xl border bg-white p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-bold text-gray-900">
             Resumen del pedido
           </h2>

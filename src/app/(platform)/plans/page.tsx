@@ -34,7 +34,7 @@ export default async function PlansPage() {
                     {isCurrent && <Badge>Plan actual</Badge>}
                   </div>
                   <div className="mt-2">
-                    <span className="text-3xl font-bold">
+                    <span className="text-2xl font-bold sm:text-3xl">
                       {plan.price === 0
                         ? "Gratis"
                         : formatPrice(plan.price, plan.currency)}

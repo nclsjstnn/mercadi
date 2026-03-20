@@ -37,7 +37,7 @@ export default function CartPage() {
             {items.map((item) => (
               <div
                 key={item.productId}
-                className="flex items-center gap-4 p-4"
+                className="flex flex-wrap items-center gap-4 p-4"
               >
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                   {item.image ? (
@@ -103,7 +103,7 @@ export default function CartPage() {
           </div>
         </div>
         <div>
-          <div className="rounded-xl border bg-white p-6">
+          <div className="rounded-xl border bg-white p-4 sm:p-6">
             <h2 className="mb-4 text-lg font-bold text-gray-900">Resumen</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

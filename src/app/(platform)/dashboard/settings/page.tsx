@@ -83,7 +83,7 @@ export default async function TenantSettingsPage() {
       />
 
       <Tabs defaultValue="business" className="space-y-6">
-        <TabsList>
+        <TabsList className="overflow-x-auto">
           <TabsTrigger value="business" className="gap-2">
             <Building2 className="h-4 w-4" />
             Negocio
@@ -216,7 +216,7 @@ export default async function TenantSettingsPage() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-1 rounded-lg border px-4 py-3">
       <span className="text-sm font-medium">{label}</span>
       <span className="text-sm text-muted-foreground">{value}</span>
     </div>
