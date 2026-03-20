@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -97,11 +98,13 @@ export function AppSidebar({
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Store className="h-4 w-4" />
-          </div>
-          <span className="text-lg font-bold">Mercadi</span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/mercadi.png"
+            alt="Mercadi"
+            width={130}
+            height={34}
+          />
         </Link>
         {!isAdmin && tenants.length > 0 && (
           <div className="mt-3">

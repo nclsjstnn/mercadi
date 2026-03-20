@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/components/landing/mobile-nav";
 import { auth } from "@/lib/auth";
 import {
   Store,
@@ -55,7 +56,7 @@ export default async function HomePage() {
               </Button>
             </Link>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             {isLoggedIn ? (
               <>
                 <span className="text-sm text-muted-foreground">
@@ -83,6 +84,7 @@ export default async function HomePage() {
               </>
             )}
           </div>
+          <MobileNav isLoggedIn={isLoggedIn} dashboardUrl={dashboardUrl} />
         </div>
       </header>
 
@@ -95,12 +97,12 @@ export default async function HomePage() {
               <Bot className="h-4 w-4" />
               Protocolo UCP para comercio con IA
             </div>
-            <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 text-4xl font-bold leading-none text-black sm:text-5xl lg:text-6xl">
               Conecta tu negocio con
               <br />
-              <span className="text-primary">agentes de compra IA</span>
+              <span className="text-amber-500">agentes de compra IA</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mt-6 max-w-2xl text-xl text-gray-700">
               Mercadi permite que pequenas empresas en Chile expongan sus
               catalogos a agentes de compra inteligentes a traves del Universal
               Commerce Protocol (UCP).
@@ -140,8 +142,8 @@ export default async function HomePage() {
         <section id="how-it-works" className="border-t bg-muted/30 py-20">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <h2 className="text-3xl font-bold">Como funciona?</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className="text-4xl font-bold text-black">Como funciona?</h2>
+              <p className="mt-2 text-gray-700">
                 Tres pasos para empezar a vender con IA
               </p>
             </div>
@@ -172,8 +174,8 @@ export default async function HomePage() {
         <section id="features" className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <h2 className="text-3xl font-bold">Por que Mercadi?</h2>
-              <p className="mt-2 text-muted-foreground">
+              <h2 className="text-4xl font-bold text-black">Por que Mercadi?</h2>
+              <p className="mt-2 text-gray-700">
                 Todo lo que necesitas para vender con comercio inteligente
               </p>
             </div>
@@ -216,10 +218,10 @@ export default async function HomePage() {
         <section className="border-t">
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 py-20">
             <div className="container mx-auto px-4 text-center">
-              <h2 className="text-3xl font-bold">
+              <h2 className="text-4xl font-bold text-black">
                 Empieza a vender con IA hoy
               </h2>
-              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+              <p className="mx-auto mt-4 max-w-xl text-gray-700">
                 Unete a los primeros negocios chilenos conectados al comercio
                 inteligente.
               </p>
@@ -345,14 +347,14 @@ function StepCard({
 }) {
   return (
     <div className="group rounded-xl border bg-card p-6 text-center transition-shadow hover:shadow-md">
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-black">
         <span className="text-sm font-bold">{step}</span>
       </div>
       <div className="mb-2 flex items-center justify-center gap-2">
-        <Icon className="h-4 w-4 text-primary" />
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <Icon className="h-4 w-4 text-amber-500" />
+        <h3 className="text-lg font-semibold text-black">{title}</h3>
       </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
   );
 }
@@ -368,11 +370,11 @@ function FeatureCard({
 }) {
   return (
     <div className="group rounded-xl border bg-card p-6 transition-all hover:border-primary/30 hover:shadow-md">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
         <Icon className="h-5 w-5" />
       </div>
-      <h3 className="mb-2 font-semibold">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <h3 className="mb-2 font-semibold text-black">{title}</h3>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
   );
 }
