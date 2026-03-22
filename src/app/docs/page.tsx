@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Store,
@@ -18,6 +19,7 @@ import {
   Tag,
   Ticket,
   Users,
+  FileSpreadsheet,
 } from "lucide-react";
 
 export const metadata = {
@@ -107,11 +109,13 @@ export default function DocsPage() {
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Store className="h-4 w-4" />
-              </div>
-              <span className="text-lg font-bold">Mercadi.cl</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/mercadi.png"
+                alt="Mercadi"
+                width={130}
+                height={34}
+              />
             </Link>
             <div className="hidden h-6 w-px bg-border sm:block" />
             <div className="hidden items-center gap-1.5 sm:flex">
@@ -156,10 +160,11 @@ export default function DocsPage() {
             <NavItem href="#register" step="1" label="Crear cuenta" />
             <NavItem href="#onboarding" step="2" label="Registrar negocio" />
             <NavItem href="#products" step="3" label="Agregar productos" />
-            <NavItem href="#shipping" step="4" label="Configurar envio" />
-            <NavItem href="#promotions" step="5" label="Promociones y cupones" />
-            <NavItem href="#collaborators" step="6" label="Colaboradores" />
-            <NavItem href="#ucp-settings" step="7" label="Configurar UCP" />
+            <NavItem href="#import" step="4" label="Importar desde Sheets" />
+            <NavItem href="#shipping" step="5" label="Configurar envio" />
+            <NavItem href="#promotions" step="6" label="Promociones y cupones" />
+            <NavItem href="#collaborators" step="7" label="Colaboradores" />
+            <NavItem href="#ucp-settings" step="8" label="Configurar UCP" />
 
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               API UCP
@@ -172,7 +177,7 @@ export default function DocsPage() {
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Gemini
             </p>
-            <NavItem href="#gemini-setup" step="8" label="Configurar Gemini" />
+            <NavItem href="#gemini-setup" step="9" label="Configurar Gemini" />
             <NavItem href="#gemini-functions" label="Function declarations" />
             <NavItem href="#gemini-example" label="Ejemplo completo" />
             <NavItem href="#gemini-test" label="Probar con demo" />
@@ -496,11 +501,83 @@ export default function DocsPage() {
               </div>
             </section>
 
-            {/* Step 4: Shipping */}
-            <section id="shipping" className="scroll-mt-24 space-y-4">
+            {/* Step 4: Import from Google Sheets */}
+            <section id="import" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
                 step="4"
+                icon={FileSpreadsheet}
+                title="Importar desde Google Sheets"
+              />
+              <p className="text-muted-foreground">
+                Si tienes muchos productos, puedes importarlos masivamente
+                desde una hoja de Google Sheets en lugar de agregarlos uno a uno.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Como importar</h4>
+                <div className="space-y-3">
+                  <FlowStep
+                    number="1"
+                    title="Ir a Dashboard → Productos → Importar"
+                    description="Accede desde el boton 'Importar' en la pagina de productos."
+                  />
+                  <FlowStep
+                    number="2"
+                    title="Pegar la URL de tu Google Sheet"
+                    description="La hoja debe estar compartida como 'Cualquier persona con el enlace puede ver'."
+                  />
+                  <FlowStep
+                    number="3"
+                    title="Revisar preview"
+                    description="Mercadi mostrara una tabla con los productos detectados y errores de validacion."
+                  />
+                  <FlowStep
+                    number="4"
+                    title="Confirmar importacion"
+                    description="Los productos validos se crean como borradores (draft). Puedes activarlos despues."
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Columnas requeridas</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="py-2 pr-4 font-medium">Columna</th>
+                        <th className="py-2 font-medium">Descripcion</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-muted-foreground">
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">sku</td><td>Codigo unico del producto</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">titulo / title</td><td>Nombre del producto</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">precio / price</td><td>Precio en CLP (entero)</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">stock</td><td>Unidades disponibles (opcional, default 0)</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">descripcion / description</td><td>Detalle del producto (opcional)</td></tr>
+                      <tr className="border-b"><td className="py-2 pr-4 font-mono">categoria / category</td><td>Categoria (opcional)</td></tr>
+                      <tr><td className="py-2 pr-4 font-mono">imagen / image</td><td>URL de imagen (opcional)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm">
+                  <strong>Tip:</strong> Los productos importados se crean en estado{" "}
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">draft</code>.
+                  Revisalos y activalos desde la lista de productos para que aparezcan
+                  en tu tienda y en las busquedas del agente IA.
+                </p>
+              </div>
+            </section>
+
+            {/* Step 5: Shipping */}
+            <section id="shipping" className="scroll-mt-24 space-y-4">
+              <SectionHeading
+                id=""
+                step="5"
                 icon={Truck}
                 title="Configurar envio"
               />
@@ -565,7 +642,7 @@ export default function DocsPage() {
             <section id="promotions" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="5"
+                step="6"
                 icon={Tag}
                 title="Promociones y cupones"
               />
@@ -639,7 +716,7 @@ export default function DocsPage() {
             <section id="collaborators" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="6"
+                step="7"
                 icon={Users}
                 title="Colaboradores"
               />
@@ -710,7 +787,7 @@ export default function DocsPage() {
             <section id="ucp-settings" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="7"
+                step="8"
                 icon={Settings}
                 title="Configurar UCP"
               />
@@ -1095,7 +1172,7 @@ export default function DocsPage() {
             <section id="gemini-setup" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="8"
+                step="9"
                 icon={Bot}
                 title="Configurar Gemini"
               />

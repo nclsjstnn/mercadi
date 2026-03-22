@@ -8,10 +8,12 @@ import {
   Zap,
   CreditCard,
   Shield,
-  BarChart3,
   Globe,
   Bot,
   ArrowRight,
+  FileSpreadsheet,
+  Ticket,
+  ShoppingCart,
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -152,19 +154,19 @@ export default async function HomePage() {
                 step="1"
                 icon={Store}
                 title="Registra tu negocio"
-                description="Crea tu cuenta, agrega tu RUT y configura tu catalogo de productos en minutos."
+                description="Crea tu cuenta, agrega tu RUT y sube tus productos manualmente o desde Google Sheets."
               />
               <StepCard
                 step="2"
                 icon={Globe}
-                title="Activa UCP"
-                description="Con un clic, tu catalogo queda disponible para agentes de compra IA a traves del protocolo UCP."
+                title="Tu tienda se activa"
+                description="Obtienes una tienda online con tu subdominio y tu catalogo queda disponible para agentes IA via UCP."
               />
               <StepCard
                 step="3"
                 icon={Zap}
-                title="Recibe ventas"
-                description="Los agentes IA encuentran tus productos, completan compras, y tu recibes los pagos."
+                title="Vende por todos los canales"
+                description="Tus clientes compran desde tu tienda o via agentes IA. Tu gestionas todo desde el dashboard."
               />
             </div>
           </div>
@@ -181,34 +183,34 @@ export default async function HomePage() {
             </div>
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <FeatureCard
-                icon={Zap}
-                title="Sin desarrollo tecnico"
-                description="No necesitas ser programador. Sube tus productos y Mercadi se encarga del protocolo UCP."
+                icon={ShoppingCart}
+                title="Tienda publica lista"
+                description="Cada negocio obtiene una tienda online con catalogo, carrito, checkout y pago. Personaliza colores, logo y dominio."
               />
               <FeatureCard
-                icon={CreditCard}
-                title="Pagos integrados"
-                description="Soporte para Transbank WebPay y MercadoPago. Recibe pagos directamente."
+                icon={FileSpreadsheet}
+                title="Importa desde Google Sheets"
+                description="Carga masivamente tus productos desde una hoja de calculo. Sin escribir codigo."
               />
               <FeatureCard
                 icon={Shield}
                 title="Hecho para Chile"
-                description="Validacion de RUT, precios en CLP, IVA 19% incluido, boletas electronicas."
+                description="Validacion de RUT, precios en CLP, IVA 19% incluido. Todo pensado para pymes chilenas."
               />
               <FeatureCard
-                icon={BarChart3}
-                title="Comision transparente"
-                description="Solo pagas una comision por venta completada. Sin costos fijos ni mensualidades."
+                icon={Ticket}
+                title="Cupones de descuento"
+                description="Crea codigos de descuento por monto fijo o porcentaje. Tus clientes los aplican en el checkout."
               />
               <FeatureCard
-                icon={Store}
-                title="Dashboard completo"
-                description="Administra productos, pedidos, pagos y configuracion desde un solo lugar."
+                icon={CreditCard}
+                title="Pagos integrados"
+                description="Soporte para Transbank WebPay y MercadoPago. Recibe pagos directamente en tu cuenta."
               />
               <FeatureCard
                 icon={Bot}
                 title="Compatible con IA"
-                description="Tu catalogo es descubierto automaticamente por Gemini y otros agentes de compra."
+                description="Tu catalogo es descubierto automaticamente por agentes de compra IA via el protocolo UCP."
               />
             </div>
           </div>
