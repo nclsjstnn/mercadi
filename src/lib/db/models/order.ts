@@ -12,6 +12,7 @@ export interface IOrder extends Document {
   orderId: string;
   tenantId: mongoose.Types.ObjectId;
   checkoutSessionId: string;
+  source: "ucp" | "storefront" | "acp";
   lineItems: ILineItem[];
   buyer: IBuyer;
   fulfillment?: IFulfillment;
@@ -29,6 +30,11 @@ const OrderSchema = new Schema<IOrder>(
     orderId: { type: String, required: true, unique: true },
     tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true },
     checkoutSessionId: { type: String, required: true },
+    source: {
+      type: String,
+      enum: ["ucp", "storefront", "acp"],
+      default: "ucp",
+    },
     lineItems: [
       {
         productId: { type: String, required: true },

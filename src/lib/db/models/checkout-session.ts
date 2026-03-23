@@ -35,9 +35,15 @@ export interface ITotals {
   total: number;
 }
 
+export interface IAcpPaymentData {
+  token?: string;
+  provider?: string;
+}
+
 export interface ICheckoutSession extends Document {
   sessionId: string;
   tenantId: mongoose.Types.ObjectId;
+  source: "ucp" | "storefront" | "acp";
   status:
     | "open"
     | "buyer_set"
@@ -56,6 +62,8 @@ export interface ICheckoutSession extends Document {
   currency: string;
   idempotencyKey?: string;
   ucpAgent?: string;
+  acpPaymentData?: IAcpPaymentData;
+  acpRequestId?: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -65,6 +73,11 @@ const CheckoutSessionSchema = new Schema<ICheckoutSession>(
   {
     sessionId: { type: String, required: true, unique: true },
     tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true },
+    source: {
+      type: String,
+      enum: ["ucp", "storefront", "acp"],
+      default: "ucp",
+    },
     status: {
       type: String,
       enum: [
@@ -120,6 +133,11 @@ const CheckoutSessionSchema = new Schema<ICheckoutSession>(
     currency: { type: String, default: "CLP" },
     idempotencyKey: { type: String },
     ucpAgent: { type: String },
+    acpPaymentData: {
+      token: { type: String },
+      provider: { type: String },
+    },
+    acpRequestId: { type: String },
     expiresAt: { type: Date, required: true },
   },
   { timestamps: true }
@@ -127,6 +145,7 @@ const CheckoutSessionSchema = new Schema<ICheckoutSession>(
 
 CheckoutSessionSchema.index({ sessionId: 1 });
 CheckoutSessionSchema.index({ tenantId: 1 });
+CheckoutSessionSchema.index({ tenantId: 1, source: 1 });
 CheckoutSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const CheckoutSession: Model<ICheckoutSession> =

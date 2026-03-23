@@ -35,6 +35,7 @@ import {
   Receipt,
   ChevronsUpDown,
   LogOut,
+  Rss,
   Store,
   Ticket,
   User as UserIcon,
@@ -48,6 +49,7 @@ const tenantNav = [
   { href: "/dashboard/coupons", label: "Cupones", icon: Ticket },
   { href: "/dashboard/orders", label: "Pedidos", icon: ShoppingCart },
   { href: "/dashboard/payments", label: "Pagos", icon: CreditCard },
+  { href: "/dashboard/acp-feed", label: "Feed ACP", icon: Rss },
   { href: "/dashboard/settings", label: "Configuración", icon: Settings },
 ];
 

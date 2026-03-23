@@ -19,7 +19,8 @@ interface CreateSessionInput {
   lineItems: Array<{ ucpItemId: string; quantity: number }>;
   idempotencyKey?: string;
   ucpAgent?: string;
-  source?: "ucp" | "storefront";
+  source?: "ucp" | "storefront" | "acp";
+  acpRequestId?: string;
 }
 
 interface CreateSessionResult {
@@ -42,15 +43,20 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
   };
   if (source === "storefront") {
     query["store.enabled"] = true;
+  } else if (source === "acp") {
+    query.acpEnabled = true;
   } else {
     query.ucpEnabled = true;
   }
   const tenant = await Tenant.findOne(query);
-  if (!tenant) throw new Error(
-    source === "storefront"
-      ? "Tienda no encontrada o no habilitada"
-      : "Tenant not found or UCP not enabled"
-  );
+  if (!tenant) {
+    const messages: Record<string, string> = {
+      storefront: "Tienda no encontrada o no habilitada",
+      acp: "Tenant not found or ACP not enabled",
+      ucp: "Tenant not found or UCP not enabled",
+    };
+    throw new Error(messages[source] || messages.ucp);
+  }
 
   const availableShippingOptions = (tenant.shipping?.options || []).filter(
     (o: IShippingOption) => o.enabled
@@ -107,6 +113,7 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
   const session = await CheckoutSession.create({
     sessionId: `cs_${nanoid(16)}`,
     tenantId: tenant._id,
+    source,
     status: "open",
     lineItems: resolvedItems,
     fulfillmentRequired,
@@ -120,6 +127,7 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
     currency: tenant.locale.currency,
     idempotencyKey: input.idempotencyKey,
     ucpAgent: input.ucpAgent,
+    acpRequestId: input.acpRequestId,
     expiresAt: new Date(Date.now() + SESSION_TTL_MINUTES * 60 * 1000),
   });
 
@@ -182,7 +190,12 @@ export async function updateSession(
   return session;
 }
 
-export async function completeSession(sessionId: string) {
+interface CompleteSessionOptions {
+  /** ACP delegated payment data — when provided, skips internal payment provider */
+  paymentData?: { token: string; provider: string };
+}
+
+export async function completeSession(sessionId: string, options?: CompleteSessionOptions) {
   await connectDB();
   const session = await CheckoutSession.findOne({ sessionId });
   if (!session) throw new Error("Session not found");
@@ -214,60 +227,83 @@ export async function completeSession(sessionId: string) {
     tenant.locale.currency
   );
 
-  // Process payment
-  const provider = getPaymentProvider(tenant.payment.provider);
   const orderId = `ord_${nanoid(16)}`;
+  const isAcpDelegated = session.source === "acp" && options?.paymentData;
 
-  const paymentResult = await provider.authorize(
-    {
+  if (isAcpDelegated) {
+    // ACP delegated payment: ChatGPT already collected payment, we receive a token
+    session.acpPaymentData = {
+      token: options.paymentData!.token,
+      provider: options.paymentData!.provider,
+    };
+
+    // Record the delegated payment transaction
+    await PaymentTransaction.create({
+      transactionId: `txn_${nanoid(16)}`,
+      tenantId: tenant._id,
+      orderId,
+      provider: `acp_delegated_${options.paymentData!.provider}`,
       amount: session.totals.total,
       currency: session.currency,
-      orderId,
-      description: `Compra en ${tenant.name} via Mercadi`,
-      buyer: {
-        email: session.buyer.email,
-        name: session.buyer.name,
-        rut: session.buyer.rut,
-      },
-      metadata: {
-        tenantId: tenant._id.toString(),
-        checkoutSessionId: session.sessionId,
-        commissionAmount: commission.totalCommission,
-      },
-    },
-    tenant.payment.providerConfig
-  );
+      status: "captured",
+      providerTransactionId: options.paymentData!.token,
+      providerResponse: { delegated: true, acpProvider: options.paymentData!.provider },
+    });
+  } else {
+    // Internal payment flow (UCP / storefront)
+    const provider = getPaymentProvider(tenant.payment.provider);
 
-  // Create payment transaction record
-  await PaymentTransaction.create({
-    transactionId: paymentResult.transactionId,
-    tenantId: tenant._id,
-    orderId,
-    provider: tenant.payment.provider,
-    amount: session.totals.total,
-    currency: session.currency,
-    status: paymentResult.success ? paymentResult.status : "failed",
-    providerTransactionId: paymentResult.providerTransactionId,
-    providerResponse: paymentResult.providerResponse,
-    errorCode: paymentResult.errorCode,
-    errorMessage: paymentResult.errorMessage,
-  });
-
-  if (!paymentResult.success) {
-    throw new Error(
-      paymentResult.errorMessage || "Payment failed"
+    const paymentResult = await provider.authorize(
+      {
+        amount: session.totals.total,
+        currency: session.currency,
+        orderId,
+        description: `Compra en ${tenant.name} via Mercadi`,
+        buyer: {
+          email: session.buyer.email,
+          name: session.buyer.name,
+          rut: session.buyer.rut,
+        },
+        metadata: {
+          tenantId: tenant._id.toString(),
+          checkoutSessionId: session.sessionId,
+          commissionAmount: commission.totalCommission,
+        },
+      },
+      tenant.payment.providerConfig
     );
-  }
 
-  // If provider needs redirect (future Transbank/MP)
-  if (!provider.supportsDirectCapture && paymentResult.redirectUrl) {
-    session.status = "pending_payment";
-    await session.save();
-    return {
-      session,
-      redirectUrl: paymentResult.redirectUrl,
+    // Create payment transaction record
+    await PaymentTransaction.create({
+      transactionId: paymentResult.transactionId,
+      tenantId: tenant._id,
       orderId,
-    };
+      provider: tenant.payment.provider,
+      amount: session.totals.total,
+      currency: session.currency,
+      status: paymentResult.success ? paymentResult.status : "failed",
+      providerTransactionId: paymentResult.providerTransactionId,
+      providerResponse: paymentResult.providerResponse,
+      errorCode: paymentResult.errorCode,
+      errorMessage: paymentResult.errorMessage,
+    });
+
+    if (!paymentResult.success) {
+      throw new Error(
+        paymentResult.errorMessage || "Payment failed"
+      );
+    }
+
+    // If provider needs redirect (future Transbank/MP)
+    if (!provider.supportsDirectCapture && paymentResult.redirectUrl) {
+      session.status = "pending_payment";
+      await session.save();
+      return {
+        session,
+        redirectUrl: paymentResult.redirectUrl,
+        orderId,
+      };
+    }
   }
 
   // Create order
@@ -275,6 +311,7 @@ export async function completeSession(sessionId: string) {
     orderId,
     tenantId: tenant._id,
     checkoutSessionId: session.sessionId,
+    source: session.source || "ucp",
     lineItems: session.lineItems,
     buyer: session.buyer,
     fulfillment: session.fulfillment,

@@ -25,6 +25,9 @@ interface ProductFormProps {
     stock?: number;
     category?: string;
     intangible?: boolean;
+    brand?: string;
+    acpEligibleSearch?: boolean;
+    acpEligibleCheckout?: boolean;
     status?: string;
   };
   submitLabel?: string;
@@ -115,13 +118,24 @@ export default function ProductForm({
         <h3 className="text-sm font-medium text-muted-foreground">
           Organizacion
         </h3>
-        <div className="space-y-2">
-          <Label htmlFor="category">Categoria</Label>
-          <Input
-            id="category"
-            name="category"
-            defaultValue={defaultValues.category}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="category">Categoria</Label>
+            <Input
+              id="category"
+              name="category"
+              defaultValue={defaultValues.category}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="brand">Marca</Label>
+            <Input
+              id="brand"
+              name="brand"
+              placeholder="Ej: Nike, Apple"
+              defaultValue={defaultValues.brand}
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Checkbox
@@ -131,6 +145,26 @@ export default function ProductForm({
           />
           <Label htmlFor="intangible" className="font-normal">
             Producto intangible (digital, servicio, gift card)
+          </Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="acpEligibleSearch"
+            name="acpEligibleSearch"
+            defaultChecked={defaultValues.acpEligibleSearch !== false}
+          />
+          <Label htmlFor="acpEligibleSearch" className="font-normal">
+            Visible en busqueda ChatGPT (ACP)
+          </Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="acpEligibleCheckout"
+            name="acpEligibleCheckout"
+            defaultChecked={defaultValues.acpEligibleCheckout !== false}
+          />
+          <Label htmlFor="acpEligibleCheckout" className="font-normal">
+            Compra directa en ChatGPT (ACP)
           </Label>
         </div>
         <div className="space-y-2">

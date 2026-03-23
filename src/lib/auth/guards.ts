@@ -63,3 +63,20 @@ export async function validateUCPApiKey(
 
   return tenant;
 }
+
+export async function validateACPApiKey(
+  tenantSlug: string,
+  apiKey: string | null
+) {
+  if (!apiKey) return null;
+
+  await connectDB();
+  const tenant = await Tenant.findOne({
+    slug: tenantSlug,
+    acpApiKey: apiKey,
+    acpEnabled: true,
+    status: "active",
+  });
+
+  return tenant;
+}

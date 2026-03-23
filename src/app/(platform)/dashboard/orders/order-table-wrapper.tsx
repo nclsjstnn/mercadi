@@ -2,6 +2,7 @@
 
 import { DataTable, type Column } from "@/components/platform/data-table";
 import { StatusBadge } from "@/components/platform/status-badge";
+import { Badge } from "@/components/ui/badge";
 
 interface OrderRow {
   orderId: string;
@@ -9,9 +10,16 @@ interface OrderRow {
   itemCount: number;
   total: string;
   merchantAmount: string;
+  source: string;
   status: string;
   date: string;
 }
+
+const sourceLabels: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  ucp: { label: "UCP", variant: "default" },
+  acp: { label: "ACP", variant: "secondary" },
+  storefront: { label: "Tienda", variant: "outline" },
+};
 
 const columns: Column<OrderRow & Record<string, unknown>>[] = [
   {
@@ -22,6 +30,14 @@ const columns: Column<OrderRow & Record<string, unknown>>[] = [
     ),
   },
   { key: "buyerName", header: "Comprador", sortable: true },
+  {
+    key: "source",
+    header: "Origen",
+    render: (row) => {
+      const src = sourceLabels[row.source] || sourceLabels.ucp;
+      return <Badge variant={src.variant}>{src.label}</Badge>;
+    },
+  },
   {
     key: "itemCount",
     header: "Productos",

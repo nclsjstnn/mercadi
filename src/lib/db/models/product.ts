@@ -13,6 +13,9 @@ export interface IProduct extends Document {
   tags: string[];
   stock: number;
   intangible: boolean;
+  brand: string;
+  acpEligibleSearch: boolean;
+  acpEligibleCheckout: boolean;
   status: "active" | "draft" | "archived";
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +35,9 @@ const ProductSchema = new Schema<IProduct>(
     tags: [{ type: String }],
     stock: { type: Number, default: 0 },
     intangible: { type: Boolean, default: false },
+    brand: { type: String, default: "" },
+    acpEligibleSearch: { type: Boolean, default: true },
+    acpEligibleCheckout: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ["active", "draft", "archived"],

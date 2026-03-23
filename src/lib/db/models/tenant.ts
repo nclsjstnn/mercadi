@@ -41,6 +41,12 @@ export interface ITenantShipping {
   options: IShippingOption[];
 }
 
+export interface ITenantAcpLegalLinks {
+  privacyPolicy: string;
+  termsOfService: string;
+  refundPolicy?: string;
+}
+
 export interface ITenant extends Document {
   name: string;
   slug: string;
@@ -53,6 +59,12 @@ export interface ITenant extends Document {
   };
   ucpEnabled: boolean;
   ucpApiKey: string;
+  acpEnabled: boolean;
+  acpApiKey: string;
+  acpSigningSecret: string;
+  acpPaymentProvider: string;
+  acpPaymentConfig: Record<string, unknown>;
+  acpLegalLinks: ITenantAcpLegalLinks;
   payment: ITenantPayment;
   store: ITenantStore;
   shipping: ITenantShipping;
@@ -78,6 +90,16 @@ const TenantSchema = new Schema<ITenant>(
     },
     ucpEnabled: { type: Boolean, default: false },
     ucpApiKey: { type: String, required: true },
+    acpEnabled: { type: Boolean, default: false },
+    acpApiKey: { type: String, default: "" },
+    acpSigningSecret: { type: String, default: "" },
+    acpPaymentProvider: { type: String, default: "stripe" },
+    acpPaymentConfig: { type: Schema.Types.Mixed, default: {} },
+    acpLegalLinks: {
+      privacyPolicy: { type: String, default: "" },
+      termsOfService: { type: String, default: "" },
+      refundPolicy: { type: String, default: "" },
+    },
     payment: {
       provider: { type: String, default: "mock" },
       providerConfig: { type: Schema.Types.Mixed, default: {} },

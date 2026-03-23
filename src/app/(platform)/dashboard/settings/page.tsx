@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, Globe, Receipt, Truck, Users } from "lucide-react";
+import { Building2, Bot, Globe, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 
 export default async function TenantSettingsPage() {
@@ -70,6 +70,8 @@ export default async function TenantSettingsPage() {
   const baseUrl = process.env.NEXTAUTH_URL || "https://mercadi.cl";
   const discoveryUrl = `${baseUrl}/${tenant.slug}/.well-known/ucp`;
   const checkoutUrl = `${baseUrl}/api/ucp/${tenant.slug}/v1/checkout-sessions`;
+  const acpCheckoutUrl = `${baseUrl}/api/acp/${tenant.slug}/checkout_sessions`;
+  const acpFeedUrl = `${baseUrl}/api/acp/${tenant.slug}/feed`;
 
   return (
     <div>
@@ -91,6 +93,10 @@ export default async function TenantSettingsPage() {
           <TabsTrigger value="ucp" className="gap-2">
             <Globe className="h-4 w-4" />
             UCP
+          </TabsTrigger>
+          <TabsTrigger value="acp" className="gap-2">
+            <Bot className="h-4 w-4" />
+            ACP / OpenAI
           </TabsTrigger>
           <TabsTrigger value="commission" className="gap-2">
             <Receipt className="h-4 w-4" />
@@ -142,6 +148,51 @@ export default async function TenantSettingsPage() {
               <CopyableField label="API Key" value={tenant.ucpApiKey} />
               <CopyableField label="Discovery URL" value={discoveryUrl} />
               <CopyableField label="Checkout Endpoint" value={checkoutUrl} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="acp">
+          <Card>
+            <CardHeader>
+              <CardTitle>Agentic Commerce Protocol (OpenAI)</CardTitle>
+              <CardDescription>
+                Configuracion para Instant Checkout en ChatGPT
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">Estado:</span>
+                <StatusBadge
+                  status={tenant.acpEnabled ? "active" : "inactive"}
+                />
+              </div>
+              {tenant.acpApiKey && (
+                <CopyableField label="API Key" value={tenant.acpApiKey} />
+              )}
+              {tenant.acpSigningSecret && (
+                <CopyableField label="Signing Secret" value={tenant.acpSigningSecret} />
+              )}
+              <InfoRow
+                label="Payment Provider"
+                value={(tenant.acpPaymentProvider || "stripe").toUpperCase()}
+              />
+              <CopyableField label="Checkout Endpoint" value={acpCheckoutUrl} />
+              <CopyableField label="Product Feed URL" value={acpFeedUrl} />
+              {(tenant.acpLegalLinks?.privacyPolicy || tenant.acpLegalLinks?.termsOfService) && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-sm font-medium">Links Legales</p>
+                  {tenant.acpLegalLinks.privacyPolicy && (
+                    <InfoRow label="Politica de Privacidad" value={tenant.acpLegalLinks.privacyPolicy} />
+                  )}
+                  {tenant.acpLegalLinks.termsOfService && (
+                    <InfoRow label="Terminos de Servicio" value={tenant.acpLegalLinks.termsOfService} />
+                  )}
+                  {tenant.acpLegalLinks.refundPolicy && (
+                    <InfoRow label="Politica de Reembolso" value={tenant.acpLegalLinks.refundPolicy} />
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

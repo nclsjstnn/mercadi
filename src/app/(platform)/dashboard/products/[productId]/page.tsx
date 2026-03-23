@@ -49,6 +49,9 @@ export default async function EditProductPage({
               stock: product.stock,
               category: product.category,
               intangible: product.intangible,
+              brand: product.brand || "",
+              acpEligibleSearch: product.acpEligibleSearch !== false,
+              acpEligibleCheckout: product.acpEligibleCheckout !== false,
               status: product.status,
             }}
             submitLabel="Guardar Cambios"

@@ -21,6 +21,10 @@ export async function createProduct(formData: FormData) {
   const compareAtPriceRaw = formData.get("compareAtPrice") as string;
   const compareAtPrice = compareAtPriceRaw ? parseInt(compareAtPriceRaw) || null : null;
 
+  const brand = (formData.get("brand") as string) || "";
+  const acpEligibleSearch = formData.get("acpEligibleSearch") === "on";
+  const acpEligibleCheckout = formData.get("acpEligibleCheckout") === "on";
+
   await Product.create({
     tenantId: session.user!.tenantId,
     title,
@@ -32,6 +36,9 @@ export async function createProduct(formData: FormData) {
     category,
     description,
     intangible,
+    brand,
+    acpEligibleSearch,
+    acpEligibleCheckout,
     status,
   });
 
@@ -54,6 +61,9 @@ export async function updateProduct(productId: string, formData: FormData) {
       stock: parseInt(formData.get("stock") as string) || 0,
       category: formData.get("category") || "",
       intangible: formData.get("intangible") === "on",
+      brand: formData.get("brand") || "",
+      acpEligibleSearch: formData.get("acpEligibleSearch") === "on",
+      acpEligibleCheckout: formData.get("acpEligibleCheckout") === "on",
       status: formData.get("status") || "draft",
     }
   );

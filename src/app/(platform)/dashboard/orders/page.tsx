@@ -28,6 +28,7 @@ export default async function TenantOrdersPage() {
     itemCount: o.lineItems.length,
     total: formatPrice(o.totals.total, currency),
     merchantAmount: formatPrice(o.commission.merchantAmount, currency),
+    source: (o as unknown as { source?: string }).source || "ucp",
     status: o.status,
     date: new Date(o.createdAt).toLocaleDateString("es-CL"),
   }));
