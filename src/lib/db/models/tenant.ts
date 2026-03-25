@@ -47,6 +47,13 @@ export interface ITenantAcpLegalLinks {
   refundPolicy?: string;
 }
 
+export interface ITenantWhatsApp {
+  enabled: boolean;
+  phoneNumberId: string;
+  accessToken: string;
+  verifyToken: string;
+}
+
 export interface ITenant extends Document {
   name: string;
   slug: string;
@@ -73,6 +80,7 @@ export interface ITenant extends Document {
   ownerId: mongoose.Types.ObjectId;
   collaborators: mongoose.Types.ObjectId[];
   locale: ITenantLocale;
+  whatsapp: ITenantWhatsApp;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -145,6 +153,12 @@ const TenantSchema = new Schema<ITenant>(
       taxInclusive: { type: Boolean, default: true },
       country: { type: String, default: "CL" },
       locale: { type: String, default: "es-CL" },
+    },
+    whatsapp: {
+      enabled: { type: Boolean, default: false },
+      phoneNumberId: { type: String, default: "" },
+      accessToken: { type: String, default: "" },
+      verifyToken: { type: String, default: "" },
     },
   },
   { timestamps: true }

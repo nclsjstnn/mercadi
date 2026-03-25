@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, Bot, CreditCard, Globe, Receipt, Truck, Users } from "lucide-react";
+import { Building2, Bot, CreditCard, Globe, MessageCircle, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 
 export default async function TenantSettingsPage() {
@@ -109,6 +109,10 @@ export default async function TenantSettingsPage() {
           <TabsTrigger value="shipping" className="gap-2">
             <Truck className="h-4 w-4" />
             Envio
+          </TabsTrigger>
+          <TabsTrigger value="whatsapp" className="gap-2">
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
           </TabsTrigger>
           {isOwner && (
             <TabsTrigger value="collaborators" className="gap-2">
@@ -325,6 +329,52 @@ export default async function TenantSettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="whatsapp">
+          <Card>
+            <CardHeader>
+              <CardTitle>WhatsApp Bot</CardTitle>
+              <CardDescription>
+                Permite a tus clientes explorar el catálogo desde WhatsApp
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">Estado:</span>
+                <StatusBadge
+                  status={tenant.whatsapp?.enabled ? "active" : "inactive"}
+                />
+              </div>
+              {tenant.whatsapp?.phoneNumberId ? (
+                <>
+                  <InfoRow
+                    label="Phone Number ID"
+                    value={tenant.whatsapp.phoneNumberId}
+                  />
+                  <CopyableField
+                    label="Webhook URL"
+                    value={`${baseUrl}/api/whatsapp/${tenant.slug}/webhook`}
+                  />
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 space-y-1">
+                    <p className="font-medium">Configuración en Meta for Developers:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Abre tu Meta App → WhatsApp → Configuration</li>
+                      <li>Webhook URL: copia la URL de arriba</li>
+                      <li>Verify Token: el mismo que configuraste aquí</li>
+                      <li>Suscribe al evento <code className="text-xs bg-blue-100 px-1 rounded">messages</code></li>
+                    </ol>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  Configura las credenciales de WhatsApp Business (Phone Number ID,
+                  Access Token, Verify Token) con el administrador de la plataforma
+                  para activar el bot.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {isOwner && (
           <TabsContent value="collaborators">
             <Card>
