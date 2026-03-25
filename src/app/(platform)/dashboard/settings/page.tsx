@@ -241,10 +241,41 @@ export default async function TenantSettingsPage() {
                     para que los pagos se confirmen automaticamente.
                   </div>
                 </>
+              ) : tenant.payment?.provider === "transbank" ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">Estado:</span>
+                    <StatusBadge
+                      status={
+                        tenant.payment.providerConfig?.commerceCode
+                          ? "active"
+                          : "inactive"
+                      }
+                    />
+                  </div>
+                  {tenant.payment.providerConfig?.commerceCode && (
+                    <InfoRow
+                      label="Codigo de Comercio"
+                      value={String(tenant.payment.providerConfig.commerceCode)}
+                    />
+                  )}
+                  <InfoRow
+                    label="Ambiente"
+                    value={
+                      tenant.payment.providerConfig?.environment === "production"
+                        ? "Produccion"
+                        : "Integracion (pruebas)"
+                    }
+                  />
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    Transbank confirma pagos en el retorno del comprador. No requiere
+                    configuracion de webhook adicional.
+                  </div>
+                </>
               ) : (
                 <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
                   Usando proveedor de prueba (mock). Contacta al administrador
-                  de la plataforma para activar MercadoPago.
+                  de la plataforma para activar MercadoPago o Transbank WebPay.
                 </div>
               )}
             </CardContent>

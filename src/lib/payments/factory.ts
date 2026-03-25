@@ -1,6 +1,7 @@
 import type { PaymentProvider } from "./provider";
 import { MockPaymentProvider } from "./mock-provider";
 import { MercadoPagoProvider } from "./mercadopago-provider";
+import { TransbankProvider } from "./transbank-provider";
 
 const providers = new Map<string, PaymentProvider>();
 
@@ -19,9 +20,7 @@ export function getPaymentProvider(name: string): PaymentProvider {
     case "mock":
       return getOrCreate("mock", () => new MockPaymentProvider());
     case "transbank":
-      throw new Error(
-        "Transbank provider not yet implemented. See https://www.transbankdevelopers.cl/"
-      );
+      return getOrCreate("transbank", () => new TransbankProvider());
     case "mercadopago":
       return getOrCreate("mercadopago", () => new MercadoPagoProvider());
     default:
