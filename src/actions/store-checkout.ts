@@ -14,6 +14,7 @@ interface ActionResult {
   error?: string;
   sessionId?: string;
   orderId?: string;
+  redirectUrl?: string;
   discount?: number;
   totals?: ITotals;
 }
@@ -91,6 +92,9 @@ export async function completeStoreCheckout(
 ): Promise<ActionResult> {
   try {
     const result = await completeSession(sessionId);
+    if ("redirectUrl" in result && result.redirectUrl) {
+      return { success: true, redirectUrl: result.redirectUrl, orderId: result.orderId };
+    }
     return { success: true, orderId: result.orderId };
   } catch (err) {
     return {

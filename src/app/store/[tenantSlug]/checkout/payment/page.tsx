@@ -38,6 +38,10 @@ function PaymentForm() {
         return;
       }
       clearCart();
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
+      }
       router.push(`/checkout/confirmation/${result.orderId}`);
     } catch {
       setError("Error inesperado");

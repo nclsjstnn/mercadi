@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, Bot, Globe, Receipt, Truck, Users } from "lucide-react";
+import { Building2, Bot, CreditCard, Globe, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 
 export default async function TenantSettingsPage() {
@@ -97,6 +97,10 @@ export default async function TenantSettingsPage() {
           <TabsTrigger value="acp" className="gap-2">
             <Bot className="h-4 w-4" />
             ACP / OpenAI
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="gap-2">
+            <CreditCard className="h-4 w-4" />
+            Pagos
           </TabsTrigger>
           <TabsTrigger value="commission" className="gap-2">
             <Receipt className="h-4 w-4" />
@@ -191,6 +195,56 @@ export default async function TenantSettingsPage() {
                   {tenant.acpLegalLinks.refundPolicy && (
                     <InfoRow label="Politica de Reembolso" value={tenant.acpLegalLinks.refundPolicy} />
                   )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle>Proveedor de Pagos</CardTitle>
+              <CardDescription>
+                Configuracion del metodo de pago para tus ventas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <InfoRow
+                label="Proveedor activo"
+                value={(tenant.payment?.provider || "mock").toUpperCase()}
+              />
+              {tenant.payment?.provider === "mercadopago" ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">Estado:</span>
+                    <StatusBadge
+                      status={
+                        tenant.payment.providerConfig?.accessToken
+                          ? "active"
+                          : "inactive"
+                      }
+                    />
+                  </div>
+                  {tenant.payment.providerConfig?.accessToken && (
+                    <InfoRow
+                      label="Access Token"
+                      value={`APP_USR-...${String(tenant.payment.providerConfig.accessToken).slice(-6)}`}
+                    />
+                  )}
+                  <CopyableField
+                    label="Webhook URL"
+                    value={`${baseUrl}/api/payments/webhook?provider=mercadopago&tenantId=${tenant._id.toString()}`}
+                  />
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    Configura esta URL como notificacion en tu panel de MercadoPago
+                    para que los pagos se confirmen automaticamente.
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                  Usando proveedor de prueba (mock). Contacta al administrador
+                  de la plataforma para activar MercadoPago.
                 </div>
               )}
             </CardContent>

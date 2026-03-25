@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/db/connect";
 import { PaymentTransaction } from "@/lib/db/models/payment-transaction";
 import { Tenant } from "@/lib/db/models/tenant";
 import { getPaymentProvider } from "@/lib/payments/factory";
+import { finalizeSessionToOrder } from "@/lib/ucp/checkout-manager";
+import type { MpWebhookPayload, MpPaymentResponse } from "@/lib/payments/mercadopago-types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +45,88 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse webhook payload and update transaction
+    // MercadoPago-specific handling
+    if (provider === "mercadopago") {
+      const payload = JSON.parse(body) as MpWebhookPayload;
+
+      // Only process payment events
+      if (
+        payload.action !== "payment.created" &&
+        payload.action !== "payment.updated"
+      ) {
+        return NextResponse.json({ received: true });
+      }
+
+      const paymentId = payload.data?.id;
+      if (!paymentId) {
+        return NextResponse.json({ received: true });
+      }
+
+      // Fetch payment details from MercadoPago
+      const accessToken = tenant.payment.providerConfig.accessToken as string;
+      const mpResponse = await fetch(
+        `https://api.mercadopago.com/v1/payments/${paymentId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (!mpResponse.ok) {
+        console.error(
+          `[mp-webhook] Failed to fetch payment ${paymentId}: ${mpResponse.status}`
+        );
+        return NextResponse.json(
+          { error: "Failed to fetch payment details" },
+          { status: 502 }
+        );
+      }
+
+      const payment = (await mpResponse.json()) as MpPaymentResponse;
+
+      // Update PaymentTransaction status (lookup by MP preference ID)
+      const txnUpdate =
+        payment.status === "approved"
+          ? { status: "captured", providerResponse: payment }
+          : payment.status === "rejected" || payment.status === "cancelled"
+            ? { status: "failed", providerResponse: payment }
+            : null;
+
+      if (txnUpdate) {
+        await PaymentTransaction.findOneAndUpdate(
+          { providerTransactionId: payment.preference_id },
+          txnUpdate
+        );
+      }
+
+      // Only finalize the order on approval
+      if (payment.status === "approved") {
+        const checkoutSessionId = payment.metadata?.checkoutSessionId as
+          | string
+          | undefined;
+        const orderId = payment.external_reference;
+
+        if (!checkoutSessionId || !orderId) {
+          console.error(
+            `[mp-webhook] Missing checkoutSessionId or orderId in payment ${paymentId}`,
+            { checkoutSessionId, orderId }
+          );
+          return NextResponse.json({ received: true });
+        }
+
+        try {
+          await finalizeSessionToOrder(checkoutSessionId, orderId);
+        } catch (err) {
+          console.error(
+            `[mp-webhook] finalizeSessionToOrder failed for session ${checkoutSessionId}:`,
+            err
+          );
+          // Return 200 anyway to prevent MP from retrying indefinitely for already-completed sessions
+          return NextResponse.json({ received: true });
+        }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // Generic fallback for other providers
     const payload = JSON.parse(body);
     if (payload.transactionId) {
       await PaymentTransaction.findOneAndUpdate(

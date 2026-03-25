@@ -19,7 +19,7 @@ export interface PaymentResult {
   success: boolean;
   transactionId: string;
   providerTransactionId: string;
-  status: "authorized" | "captured" | "failed";
+  status: "authorized" | "captured" | "failed" | "refunded";
   errorCode?: string;
   errorMessage?: string;
   providerResponse?: Record<string, unknown>;

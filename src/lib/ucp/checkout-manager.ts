@@ -294,7 +294,7 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
       );
     }
 
-    // If provider needs redirect (future Transbank/MP)
+    // If provider needs redirect (Transbank/MP)
     if (!provider.supportsDirectCapture && paymentResult.redirectUrl) {
       session.status = "pending_payment";
       await session.save();
@@ -306,7 +306,52 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
     }
   }
 
-  // Create order
+  const order = await _createOrderFromSession(session, tenant, orderId, commission);
+  return { session, order, orderId };
+}
+
+/**
+ * Finalizes a pending_payment session into a confirmed order.
+ * Called by the MercadoPago webhook handler after verifying an approved payment.
+ *
+ * @param sessionId  - The checkout session ID (from payment metadata)
+ * @param orderId    - The order ID set during authorize() as external_reference
+ */
+export async function finalizeSessionToOrder(sessionId: string, orderId: string) {
+  await connectDB();
+  const session = await CheckoutSession.findOne({ sessionId });
+  if (!session) throw new Error("Session not found");
+
+  if (session.status === "completed") {
+    // Idempotent — webhook may fire more than once
+    const order = await Order.findOne({ checkoutSessionId: sessionId });
+    return { session, order };
+  }
+  if (session.status === "cancelled") {
+    throw new Error("Cannot finalize cancelled session");
+  }
+
+  const tenant = (await Tenant.findById(session.tenantId)) as ITenant;
+  if (!tenant) throw new Error("Tenant not found");
+
+  const commission = calculateCommission(
+    session.totals.total,
+    tenant.commissionRate,
+    tenant.locale.taxRate,
+    tenant.locale.taxInclusive,
+    tenant.locale.currency
+  );
+
+  const order = await _createOrderFromSession(session, tenant, orderId, commission);
+  return { session, order };
+}
+
+async function _createOrderFromSession(
+  session: InstanceType<typeof CheckoutSession>,
+  tenant: ITenant,
+  orderId: string,
+  commission: ReturnType<typeof calculateCommission>
+) {
   const order = await Order.create({
     orderId,
     tenantId: tenant._id,
@@ -353,7 +398,7 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
   session.status = "completed";
   await session.save();
 
-  return { session, order, orderId };
+  return order;
 }
 
 export async function applyCoupon(sessionId: string, couponCode: string) {
