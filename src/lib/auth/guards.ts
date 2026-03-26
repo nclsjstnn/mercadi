@@ -27,11 +27,21 @@ export async function requireAuth(): Promise<AuthSession> {
 export async function requireAdmin(): Promise<AuthSession> {
   const session = await requireAuth();
   if (session.user.role !== "admin") {
-    // Tenant owners go to their dashboard
-    if (session.user.tenantId) {
-      redirect("/dashboard");
-    }
+    if (session.user.tenantId) redirect("/dashboard");
     redirect("/onboarding");
+  }
+  return session;
+}
+
+export async function requireSuperAdmin(): Promise<AuthSession> {
+  const session = await requireAuth();
+  const allowed = (process.env.SUPER_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (!allowed.includes((session.user.email ?? "").toLowerCase())) {
+    if (session.user.tenantId) redirect("/dashboard");
+    redirect("/login");
   }
   return session;
 }
