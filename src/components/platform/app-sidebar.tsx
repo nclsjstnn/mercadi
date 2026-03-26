@@ -43,6 +43,7 @@ import {
   User as UserIcon,
   MessageCircle,
   Bot,
+  Globe,
 } from "lucide-react";
 import { TenantSwitcher } from "./tenant-switcher";
 import type { LucideIcon } from "lucide-react";
@@ -57,6 +58,7 @@ const tenantMainNav = [
 ];
 
 const tenantChannelNav = [
+  { href: "/dashboard/settings?tab=ucp", label: "UCP / Gemini", icon: Globe },
   { href: "/dashboard/settings?tab=whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/dashboard/settings?tab=acp", label: "ChatGPT / ACP", icon: Bot },
   { href: "/dashboard/acp-feed", label: "Feed ACP", icon: Rss },
