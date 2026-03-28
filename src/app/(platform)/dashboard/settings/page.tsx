@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, Bot, CreditCard, Globe, MessageCircle, Receipt, Truck, Users } from "lucide-react";
+import { Building2, CreditCard, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 
 export default async function TenantSettingsPage() {
@@ -68,10 +68,6 @@ export default async function TenantSettingsPage() {
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || "https://mercadi.cl";
-  const discoveryUrl = `${baseUrl}/${tenant.slug}/.well-known/ucp`;
-  const checkoutUrl = `${baseUrl}/api/ucp/${tenant.slug}/v1/checkout-sessions`;
-  const acpCheckoutUrl = `${baseUrl}/api/acp/${tenant.slug}/checkout_sessions`;
-  const acpFeedUrl = `${baseUrl}/api/acp/${tenant.slug}/feed`;
 
   return (
     <div>
@@ -90,14 +86,6 @@ export default async function TenantSettingsPage() {
             <Building2 className="h-4 w-4" />
             Negocio
           </TabsTrigger>
-          <TabsTrigger value="ucp" className="gap-2">
-            <Globe className="h-4 w-4" />
-            UCP
-          </TabsTrigger>
-          <TabsTrigger value="acp" className="gap-2">
-            <Bot className="h-4 w-4" />
-            ACP / OpenAI
-          </TabsTrigger>
           <TabsTrigger value="payments" className="gap-2">
             <CreditCard className="h-4 w-4" />
             Pagos
@@ -109,10 +97,6 @@ export default async function TenantSettingsPage() {
           <TabsTrigger value="shipping" className="gap-2">
             <Truck className="h-4 w-4" />
             Envio
-          </TabsTrigger>
-          <TabsTrigger value="whatsapp" className="gap-2">
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
           </TabsTrigger>
           {isOwner && (
             <TabsTrigger value="collaborators" className="gap-2">
@@ -134,73 +118,6 @@ export default async function TenantSettingsPage() {
               <InfoRow label="Nombre" value={tenant.name} />
               <InfoRow label="RUT" value={tenant.rut} />
               <InfoRow label="Razon Social" value={tenant.legalName} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="ucp">
-          <Card>
-            <CardHeader>
-              <CardTitle>Universal Commerce Protocol</CardTitle>
-              <CardDescription>
-                Configuracion de tu endpoint UCP para agentes IA
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Estado:</span>
-                <StatusBadge
-                  status={tenant.ucpEnabled ? "active" : "inactive"}
-                />
-              </div>
-              <CopyableField label="API Key" value={tenant.ucpApiKey} />
-              <CopyableField label="Discovery URL" value={discoveryUrl} />
-              <CopyableField label="Checkout Endpoint" value={checkoutUrl} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="acp">
-          <Card>
-            <CardHeader>
-              <CardTitle>Agentic Commerce Protocol (OpenAI)</CardTitle>
-              <CardDescription>
-                Configuracion para Instant Checkout en ChatGPT
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Estado:</span>
-                <StatusBadge
-                  status={tenant.acpEnabled ? "active" : "inactive"}
-                />
-              </div>
-              {tenant.acpApiKey && (
-                <CopyableField label="API Key" value={tenant.acpApiKey} />
-              )}
-              {tenant.acpSigningSecret && (
-                <CopyableField label="Signing Secret" value={tenant.acpSigningSecret} />
-              )}
-              <InfoRow
-                label="Payment Provider"
-                value={(tenant.acpPaymentProvider || "stripe").toUpperCase()}
-              />
-              <CopyableField label="Checkout Endpoint" value={acpCheckoutUrl} />
-              <CopyableField label="Product Feed URL" value={acpFeedUrl} />
-              {(tenant.acpLegalLinks?.privacyPolicy || tenant.acpLegalLinks?.termsOfService) && (
-                <div className="space-y-2 pt-2">
-                  <p className="text-sm font-medium">Links Legales</p>
-                  {tenant.acpLegalLinks.privacyPolicy && (
-                    <InfoRow label="Politica de Privacidad" value={tenant.acpLegalLinks.privacyPolicy} />
-                  )}
-                  {tenant.acpLegalLinks.termsOfService && (
-                    <InfoRow label="Terminos de Servicio" value={tenant.acpLegalLinks.termsOfService} />
-                  )}
-                  {tenant.acpLegalLinks.refundPolicy && (
-                    <InfoRow label="Politica de Reembolso" value={tenant.acpLegalLinks.refundPolicy} />
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -329,52 +246,6 @@ export default async function TenantSettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="whatsapp">
-          <Card>
-            <CardHeader>
-              <CardTitle>WhatsApp Bot</CardTitle>
-              <CardDescription>
-                Permite a tus clientes explorar el catálogo desde WhatsApp
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Estado:</span>
-                <StatusBadge
-                  status={tenant.whatsapp?.enabled ? "active" : "inactive"}
-                />
-              </div>
-              {tenant.whatsapp?.phoneNumberId ? (
-                <>
-                  <InfoRow
-                    label="Phone Number ID"
-                    value={tenant.whatsapp.phoneNumberId}
-                  />
-                  <CopyableField
-                    label="Webhook URL"
-                    value={`${baseUrl}/api/whatsapp/${tenant.slug}/webhook`}
-                  />
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 space-y-1">
-                    <p className="font-medium">Configuración en Meta for Developers:</p>
-                    <ol className="list-decimal list-inside space-y-1">
-                      <li>Abre tu Meta App → WhatsApp → Configuration</li>
-                      <li>Webhook URL: copia la URL de arriba</li>
-                      <li>Verify Token: el mismo que configuraste aquí</li>
-                      <li>Suscribe al evento <code className="text-xs bg-blue-100 px-1 rounded">messages</code></li>
-                    </ol>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                  Configura las credenciales de WhatsApp Business (Phone Number ID,
-                  Access Token, Verify Token) con el administrador de la plataforma
-                  para activar el bot.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {isOwner && (
           <TabsContent value="collaborators">
             <Card>

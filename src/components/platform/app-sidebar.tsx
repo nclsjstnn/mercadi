@@ -37,7 +37,6 @@ import {
   Receipt,
   ChevronsUpDown,
   LogOut,
-  Rss,
   Store,
   Ticket,
   User as UserIcon,
@@ -58,10 +57,9 @@ const tenantMainNav = [
 ];
 
 const tenantChannelNav = [
-  { href: "/dashboard/settings?tab=ucp", label: "UCP / Gemini", icon: Globe },
-  { href: "/dashboard/settings?tab=whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { href: "/dashboard/settings?tab=acp", label: "ChatGPT / ACP", icon: Bot },
-  { href: "/dashboard/acp-feed", label: "Feed ACP", icon: Rss },
+  { href: "/dashboard/channels/ucp", label: "UCP / Gemini", icon: Globe },
+  { href: "/dashboard/channels/whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { href: "/dashboard/channels/acp", label: "ChatGPT / ACP", icon: Bot },
 ];
 
 const tenantSettingsNav = [
