@@ -27,7 +27,7 @@ export default async function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-3">
             <Image
               src="/mercadi.png"
               alt="Mercadi"
@@ -35,6 +35,9 @@ export default async function HomePage() {
               height={36}
               priority
             />
+            <span className="hidden items-center gap-1 rounded-full border border-border/60 bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground sm:inline-flex">
+              🇨🇱 Chile
+            </span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <a
