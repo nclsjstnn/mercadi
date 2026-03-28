@@ -43,6 +43,8 @@ import {
   MessageCircle,
   Bot,
   Globe,
+  BookOpen,
+  LifeBuoy,
 } from "lucide-react";
 import { TenantSwitcher } from "./tenant-switcher";
 import type { LucideIcon } from "lucide-react";
@@ -63,7 +65,9 @@ const tenantChannelNav = [
 ];
 
 const tenantSettingsNav = [
-  { href: "/dashboard/settings", label: "Configuración", icon: Settings },
+  { href: "/dashboard/settings", label: "Configuracion", icon: Settings },
+  { href: "/docs", label: "Documentacion", icon: BookOpen },
+  { href: "/support", label: "Soporte", icon: LifeBuoy },
 ];
 
 const adminNav = [

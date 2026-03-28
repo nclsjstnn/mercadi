@@ -15,6 +15,7 @@ import {
   Ticket,
   ShoppingCart,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -48,10 +49,11 @@ export default async function HomePage() {
             >
               Caracteristicas
             </a>
-            <Link href="/docs">
-              <Button variant="ghost" size="sm">
-                Docs
-              </Button>
+            <Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground">
+              Docs
+            </Link>
+            <Link href="/support" className="text-sm text-muted-foreground hover:text-foreground">
+              Soporte
             </Link>
             <Link href="/test">
               <Button variant="ghost" size="sm">
@@ -94,28 +96,28 @@ export default async function HomePage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-          <div className="container relative mx-auto px-4 py-24 text-center lg:py-32">
-            <div className="mx-auto inline-flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground">
-              <Zap className="h-4 w-4" />
-              WhatsApp · ChatGPT · Tienda web
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/60 via-transparent to-primary/5" />
+          <div className="container relative mx-auto px-4 py-24 text-center lg:py-36">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-700">
+              <Sparkles className="h-3.5 w-3.5" />
+              Compatible con agentes de IA — Gemini, ChatGPT y mas
             </div>
-            <h1 className="mt-6 text-4xl font-bold leading-none text-black sm:text-5xl lg:text-6xl">
-              Tu catalogo en todos
+            <h1 className="mt-6 text-4xl font-bold leading-tight text-black sm:text-5xl lg:text-[3.75rem]">
+              Vende por WhatsApp, Gemini
               <br />
-              <span className="text-amber-500">los canales digitales</span>
+              <span className="text-amber-500">y ChatGPT. Sin codigo.</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-xl text-gray-700">
-              Mercadi conecta tu negocio con WhatsApp, ChatGPT y tu propia
-              tienda web. Tus clientes te encuentran donde ya estan, y tu
-              gestionas todo desde un solo lugar.
+            <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 leading-relaxed">
+              Sube tu catalogo una vez. Mercadi lo publica en WhatsApp, Google
+              Gemini, ChatGPT y tu tienda web — con pagos integrados y todo
+              centralizado en un dashboard.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {isLoggedIn ? (
                 <Link href={dashboardUrl}>
                   <Button
                     size="lg"
-                    className="gap-2 bg-amber-500 text-black font-semibold text-lg hover:bg-amber-600 shadow-sm px-8"
+                    className="gap-2 bg-amber-500 text-black font-semibold text-base hover:bg-amber-600 shadow-sm px-8"
                   >
                     Ir al Dashboard
                     <ArrowRight className="h-4 w-4" />
@@ -125,9 +127,9 @@ export default async function HomePage() {
                 <Link href="/register">
                   <Button
                     size="lg"
-                    className="gap-2 bg-amber-500 text-black font-semibold text-lg hover:bg-amber-600 shadow-sm px-8"
+                    className="gap-2 bg-amber-500 text-black font-semibold text-base hover:bg-amber-600 shadow-sm px-8"
                   >
-                    Prueba una tienda gratis!
+                    Abre tu tienda gratis
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -138,6 +140,9 @@ export default async function HomePage() {
                 </Button>
               </Link>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Sin tarjeta de credito · Listo en minutos
+            </p>
           </div>
         </section>
 
@@ -145,9 +150,9 @@ export default async function HomePage() {
         <section className="border-t bg-muted/30 py-16">
           <div className="container mx-auto px-4">
             <p className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider mb-8">
-              Un catalogo. Tres canales.
+              Un catalogo. Cuatro canales.
             </p>
-            <div className="grid gap-4 md:grid-cols-3 max-w-3xl mx-auto">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
               <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                   <MessageCircle className="h-6 w-6 text-green-600" />
@@ -155,7 +160,17 @@ export default async function HomePage() {
                 <h3 className="font-semibold text-black">WhatsApp</h3>
                 <p className="text-sm text-gray-600">
                   Tus clientes exploran el catalogo y reciben el link de compra
-                  directo en WhatsApp.
+                  directo en el chat.
+                </p>
+              </div>
+              <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                  <Globe className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-black">Google Gemini</h3>
+                <p className="text-sm text-gray-600">
+                  Gemini descubre tu catalogo via UCP y permite comprar
+                  directamente desde la busqueda de Google.
                 </p>
               </div>
               <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center">
@@ -164,8 +179,8 @@ export default async function HomePage() {
                 </div>
                 <h3 className="font-semibold text-black">ChatGPT</h3>
                 <p className="text-sm text-gray-600">
-                  Usuarios de ChatGPT pueden buscar y comprar en tu tienda sin
-                  salir del chat.
+                  Usuarios de ChatGPT compran en tu tienda via Instant
+                  Checkout, sin salir del chat.
                 </p>
               </div>
               <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center">
@@ -311,82 +326,112 @@ export default async function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-12">
-        <div className="container mx-auto grid gap-8 px-4 md:grid-cols-4">
-          <div>
-            <div className="flex items-center">
-              <Image
-                src="/mercadi.png"
-                alt="Mercadi"
-                width={120}
-                height={32}
-              />
-            </div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Vende por WhatsApp, ChatGPT y tu tienda web. Todo desde un
-              solo dashboard.
+      <footer className="border-t bg-muted/20 py-14">
+        <div className="container mx-auto grid gap-10 px-4 md:grid-cols-4">
+          {/* Brand */}
+          <div className="md:col-span-1">
+            <Image src="/mercadi.png" alt="Mercadi" width={120} height={32} />
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+              La plataforma para pymes chilenas que quieren vender por
+              WhatsApp, Gemini y ChatGPT.
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground/60">
+              Hecho en Chile 🇨🇱
             </p>
           </div>
+
+          {/* Producto */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold">Producto</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Producto
+            </h4>
+            <ul className="space-y-2.5 text-sm">
               <li>
-                <a href="#how-it-works" className="hover:text-foreground">
+                <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
                   Como funciona
                 </a>
               </li>
               <li>
-                <a href="#features" className="hover:text-foreground">
+                <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
                   Caracteristicas
                 </a>
               </li>
               <li>
-                <Link href="/docs" className="hover:text-foreground">
-                  Documentacion
-                </Link>
-              </li>
-              <li>
-                <Link href="/test" className="hover:text-foreground">
-                  Demo
+                <Link href="/test" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Demo interactiva
                 </Link>
               </li>
             </ul>
           </div>
+
+          {/* Recursos */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold">Cuenta</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Recursos
+            </h4>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Documentacion
+                </Link>
+              </li>
+              <li>
+                <Link href="/docs#api" className="text-muted-foreground hover:text-foreground transition-colors">
+                  API UCP / ACP
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Soporte
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Cuenta + Legal */}
+          <div>
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Cuenta
+            </h4>
+            <ul className="space-y-2.5 text-sm">
               {isLoggedIn ? (
                 <li>
-                  <Link href={dashboardUrl} className="hover:text-foreground">
+                  <Link href={dashboardUrl} className="text-muted-foreground hover:text-foreground transition-colors">
                     Mi Dashboard
                   </Link>
                 </li>
               ) : (
                 <>
                   <li>
-                    <Link href="/login" className="hover:text-foreground">
+                    <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors">
                       Ingresar
                     </Link>
                   </li>
                   <li>
-                    <Link href="/register" className="hover:text-foreground">
-                      Crear Cuenta
+                    <Link href="/register" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Crear cuenta gratis
                     </Link>
                   </li>
                 </>
               )}
             </ul>
-          </div>
-          <div>
-            <h4 className="mb-3 text-sm font-semibold">Legal</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Terminos de Servicio</li>
-              <li>Politica de Privacidad</li>
+            <h4 className="mb-4 mt-7 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Legal
+            </h4>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <span className="text-muted-foreground/60 cursor-default">Terminos de Servicio</span>
+              </li>
+              <li>
+                <span className="text-muted-foreground/60 cursor-default">Politica de Privacidad</span>
+              </li>
             </ul>
           </div>
         </div>
-        <div className="container mx-auto mt-8 border-t px-4 pt-8 text-center text-sm text-muted-foreground">
-          Mercadi.cl — Vende por WhatsApp, ChatGPT y tu tienda web
+
+        <div className="container mx-auto mt-10 border-t px-4 pt-8 flex flex-col items-center justify-between gap-3 sm:flex-row text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} Mercadi SpA · RUT 00.000.000-0</span>
+          <span className="hidden sm:block">WhatsApp · Gemini · ChatGPT · Tienda web</span>
         </div>
       </footer>
     </div>
