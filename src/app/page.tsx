@@ -2,7 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/landing/mobile-nav";
+import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { auth } from "@/lib/auth";
+import { isInvitationsEnabled } from "@/lib/invitations";
 import {
   Store,
   Zap,
@@ -19,6 +21,7 @@ import {
 } from "lucide-react";
 
 export default async function HomePage() {
+  const invitationsEnabled = isInvitationsEnabled();
   const session = await auth();
   const isLoggedIn = !!session?.user;
   const dashboardUrl = session?.user?.role === "admin" ? "/admin" : "/dashboard";
@@ -126,6 +129,16 @@ export default async function HomePage() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
+              ) : invitationsEnabled ? (
+                <a href="#waitlist">
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-amber-500 text-black font-semibold text-base hover:bg-amber-600 shadow-sm px-8"
+                  >
+                    Únete a la lista de espera
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </a>
               ) : (
                 <Link href="/register">
                   <Button
@@ -327,6 +340,27 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
+
+      {/* Waitlist section — shown when INVITATIONS_ENABLED=true */}
+      {invitationsEnabled && (
+        <section id="waitlist" className="border-t py-20 bg-muted/20">
+          <div className="container mx-auto px-4 max-w-xl text-center">
+            <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 mb-4">
+              Acceso anticipado
+            </span>
+            <h2 className="text-3xl font-bold text-black">
+              Únete a la lista de espera
+            </h2>
+            <p className="mt-3 text-gray-600 leading-relaxed">
+              Estamos abriendo acceso de forma gradual. Deja tus datos y te
+              avisamos cuando haya un cupo disponible.
+            </p>
+            <div className="mt-8 rounded-2xl border bg-card p-8 text-left shadow-sm">
+              <WaitlistForm />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t bg-muted/20 py-14">

@@ -45,6 +45,7 @@ import {
   Globe,
   BookOpen,
   LifeBuoy,
+  Users,
 } from "lucide-react";
 import { TenantSwitcher } from "./tenant-switcher";
 import type { LucideIcon } from "lucide-react";
@@ -75,7 +76,8 @@ const adminNav = [
   { href: "/admin/tenants", label: "Negocios", icon: Building2 },
   { href: "/admin/orders", label: "Pedidos", icon: ShoppingCart },
   { href: "/admin/commissions", label: "Comisiones", icon: Receipt },
-  { href: "/admin/settings", label: "Configuración", icon: Settings },
+  { href: "/admin/waitlist", label: "Lista de Espera", icon: Users },
+  { href: "/admin/settings", label: "Configuracion", icon: Settings },
 ];
 
 interface TenantInfo {
