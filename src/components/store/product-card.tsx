@@ -3,6 +3,7 @@ import { formatPrice } from "@/lib/utils/currency";
 
 interface ProductCardProps {
   id: string;
+  tenantSlug: string;
   title: string;
   price: number;
   compareAtPrice?: number;
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 export function ProductCard({
   id,
+  tenantSlug,
   title,
   price,
   compareAtPrice,
@@ -26,7 +28,7 @@ export function ProductCard({
     : 0;
   return (
     <Link
-      href={`/product/${id}`}
+      href={`/store/${tenantSlug}/product/${id}`}
       className="group overflow-hidden rounded-xl border bg-white transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-square overflow-hidden bg-gray-100">

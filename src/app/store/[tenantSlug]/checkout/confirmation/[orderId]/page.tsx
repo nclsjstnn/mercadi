@@ -104,7 +104,7 @@ export default async function ConfirmationPage({
       </div>
 
       <Link
-        href="/"
+        href={`/store/${tenantSlug}`}
         className="mt-8 inline-block rounded-lg px-6 py-3 text-sm font-medium text-white"
         style={{ backgroundColor: "var(--store-primary)" }}
       >

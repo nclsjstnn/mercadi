@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
 import { formatPrice } from "@/lib/utils/currency";
 
 export default function CartPage() {
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { items, removeItem, updateQuantity, totalPrice } = useCart();
 
   if (items.length === 0) {
@@ -18,7 +20,7 @@ export default function CartPage() {
           Agrega productos para comenzar tu compra.
         </p>
         <Link
-          href="/"
+          href={`/store/${tenantSlug}`}
           className="rounded-lg px-6 py-3 text-sm font-medium text-white"
           style={{ backgroundColor: "var(--store-primary)" }}
         >
@@ -124,7 +126,7 @@ export default function CartPage() {
               </div>
             </div>
             <Link
-              href="/checkout"
+              href={`/store/${tenantSlug}/checkout`}
               className="mt-6 block w-full rounded-lg py-3 text-center text-sm font-medium text-white"
               style={{ backgroundColor: "var(--store-primary)" }}
             >

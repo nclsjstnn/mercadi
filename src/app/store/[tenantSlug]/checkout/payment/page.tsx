@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useCart } from "@/components/store/cart-provider";
 import { completeStoreCheckout } from "@/actions/store-checkout";
 import { formatPrice } from "@/lib/utils/currency";
@@ -9,6 +9,7 @@ import { Suspense } from "react";
 
 function PaymentForm() {
   const router = useRouter();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
   const discount = parseInt(searchParams.get("discount") || "0") || 0;
@@ -42,7 +43,7 @@ function PaymentForm() {
         window.location.href = result.redirectUrl;
         return;
       }
-      router.push(`/checkout/confirmation/${result.orderId}`);
+      router.push(`/store/${tenantSlug}/checkout/confirmation/${result.orderId}`);
     } catch {
       setError("Error inesperado");
       setLoading(false);

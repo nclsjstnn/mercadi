@@ -4,12 +4,12 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "./cart-provider";
 
-export function CartButton() {
+export function CartButton({ tenantSlug }: { tenantSlug: string }) {
   const { totalItems } = useCart();
 
   return (
     <Link
-      href="/cart"
+      href={`/store/${tenantSlug}/cart`}
       className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105"
       style={{ backgroundColor: "var(--store-primary, #2563eb)" }}
     >

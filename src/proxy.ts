@@ -29,6 +29,12 @@ export function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
+  // If path already starts with /store/, no rewrite needed (avoids double-rewrite
+  // when store pages use full /store/:slug/... hrefs on a subdomain host)
+  if (pathname.startsWith("/store/")) {
+    return NextResponse.next();
+  }
+
   // Only act when request comes in on a subdomain of ROOT_DOMAIN.
   // Passthrough for:
   //   mercadi.cl          (no subdomain)

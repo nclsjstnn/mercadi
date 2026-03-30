@@ -55,13 +55,14 @@ export default async function StoreLayout({
       <CartProvider tenantSlug={tenant.slug}>
         <StoreHeader
           businessName={tenant.name}
+          tenantSlug={tenant.slug}
           logoUrl={theme.logoUrl || undefined}
         />
         <main className="mx-auto min-h-[60vh] max-w-7xl px-4 py-8 sm:px-6">
           {children}
         </main>
         <StoreFooter businessName={tenant.name} showBranding={showBranding} />
-        <CartButton />
+        <CartButton tenantSlug={tenant.slug} />
       </CartProvider>
     </div>
   );

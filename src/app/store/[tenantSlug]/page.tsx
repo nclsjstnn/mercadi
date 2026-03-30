@@ -39,6 +39,7 @@ export default async function StorePLP({
             <ProductCard
               key={product._id.toString()}
               id={product._id.toString()}
+              tenantSlug={tenantSlug}
               title={product.title}
               price={product.price}
               compareAtPrice={product.compareAtPrice ?? undefined}

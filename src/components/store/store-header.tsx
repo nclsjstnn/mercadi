@@ -6,16 +6,17 @@ import { useCart } from "./cart-provider";
 
 interface StoreHeaderProps {
   businessName: string;
+  tenantSlug: string;
   logoUrl?: string;
 }
 
-export function StoreHeader({ businessName, logoUrl }: StoreHeaderProps) {
+export function StoreHeader({ businessName, tenantSlug, logoUrl }: StoreHeaderProps) {
   const { totalItems } = useCart();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href={`/store/${tenantSlug}`} className="flex items-center gap-3">
           {logoUrl && (
             <img src={logoUrl} alt={businessName} className="h-10 w-auto" />
           )}
@@ -28,13 +29,13 @@ export function StoreHeader({ businessName, logoUrl }: StoreHeaderProps) {
         </Link>
         <nav className="flex items-center gap-6">
           <Link
-            href="/"
+            href={`/store/${tenantSlug}`}
             className="text-sm font-medium text-gray-600 hover:text-gray-900"
           >
             Productos
           </Link>
           <Link
-            href="/cart"
+            href={`/store/${tenantSlug}/cart`}
             className="relative flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900"
           >
             <ShoppingCart className="h-5 w-5" />

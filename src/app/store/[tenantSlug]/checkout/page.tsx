@@ -140,7 +140,7 @@ export default function CheckoutPage() {
         paymentParams.set("discount", String(couponDiscount));
         if (appliedCoupon) paymentParams.set("coupon", appliedCoupon);
       }
-      router.push(`/checkout/payment?${paymentParams.toString()}`);
+      router.push(`/store/${tenantSlug}/checkout/payment?${paymentParams.toString()}`);
     } catch {
       setError("Error inesperado");
       setLoading(false);
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
           No hay productos en tu carrito
         </h1>
         <a
-          href="/"
+          href={`/store/${tenantSlug}`}
           className="text-sm font-medium"
           style={{ color: "var(--store-primary)" }}
         >
