@@ -29,9 +29,12 @@ export function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
-  // If path already starts with /store/, no rewrite needed (avoids double-rewrite
-  // when store pages use full /store/:slug/... hrefs on a subdomain host)
-  if (pathname.startsWith("/store/")) {
+  // Never rewrite API routes, Next.js internals, or paths already under /store/
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/store/") ||
+    pathname.startsWith("/checkout/transbank-redirect")
+  ) {
     return NextResponse.next();
   }
 

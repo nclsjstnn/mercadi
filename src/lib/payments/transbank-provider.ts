@@ -44,14 +44,15 @@ export class TransbankProvider implements PaymentProvider {
     intent: PaymentIntent,
     providerConfig: Record<string, unknown>
   ): Promise<PaymentResult> {
-    const baseUrl =
-      (providerConfig.baseUrl as string) ||
+    // API callbacks must always use the root domain — never the store subdomain.
+    // providerConfig.baseUrl is for the store frontend only.
+    const apiBase =
       process.env.NEXTAUTH_URL ||
       "https://mercadi.cl";
 
     const sessionId = intent.metadata.checkoutSessionId;
     const tenantId = intent.metadata.tenantId;
-    const returnUrl = `${baseUrl}/api/payments/transbank/return?session_id=${sessionId}&tenant_id=${tenantId}`;
+    const returnUrl = `${apiBase}/api/payments/transbank/return?session_id=${sessionId}&tenant_id=${tenantId}`;
 
     const tx = this.getTransaction(providerConfig);
     const response = (await tx.create(
@@ -66,8 +67,8 @@ export class TransbankProvider implements PaymentProvider {
       transactionId: `txn_${nanoid(16)}`,
       providerTransactionId: response.token,
       status: "authorized",
-      // Redirect to intermediate page that auto-POSTs the form to WebPay
-      redirectUrl: `/checkout/transbank-redirect?token=${encodeURIComponent(response.token)}&url=${encodeURIComponent(response.url)}`,
+      // Absolute URL so it works correctly on both path-based and subdomain access
+      redirectUrl: `${apiBase}/checkout/transbank-redirect?token=${encodeURIComponent(response.token)}&url=${encodeURIComponent(response.url)}`,
     };
   }
 
