@@ -7,6 +7,9 @@ import {
   applyCoupon,
   removeCoupon,
 } from "@/lib/ucp/checkout-manager";
+import { connectDB } from "@/lib/db/connect";
+import { CheckoutSession } from "@/lib/db/models/checkout-session";
+import { Tenant } from "@/lib/db/models/tenant";
 import type { IBuyer, IFulfillment, ITotals } from "@/lib/db/models/checkout-session";
 
 interface ActionResult {
@@ -87,11 +90,45 @@ export async function removeStoreCoupon(
   }
 }
 
-export async function completeStoreCheckout(
+export async function getCheckoutProviders(
   sessionId: string
+): Promise<{ success: boolean; providers?: { provider: string; label: string }[]; error?: string }> {
+  try {
+    await connectDB();
+    const session = await CheckoutSession.findOne({ sessionId }).lean();
+    if (!session) return { success: false, error: "Sesion no encontrada" };
+
+    const tenant = await Tenant.findById(session.tenantId).lean();
+    if (!tenant) return { success: false, error: "Negocio no encontrado" };
+
+    const LABELS: Record<string, string> = {
+      transbank: "WebPay (débito / crédito)",
+      mercadopago: "MercadoPago",
+      mock: "Pago de prueba",
+    };
+
+    let active: { provider: string; label: string }[] = [];
+
+    if (tenant.payments?.length) {
+      active = tenant.payments
+        .filter((p) => p.enabled)
+        .map((p) => ({ provider: p.provider, label: LABELS[p.provider] ?? p.provider }));
+    } else if (tenant.payment?.provider) {
+      active = [{ provider: tenant.payment.provider, label: LABELS[tenant.payment.provider] ?? tenant.payment.provider }];
+    }
+
+    return { success: true, providers: active };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Error" };
+  }
+}
+
+export async function completeStoreCheckout(
+  sessionId: string,
+  provider?: string
 ): Promise<ActionResult> {
   try {
-    const result = await completeSession(sessionId);
+    const result = await completeSession(sessionId, { provider });
     if ("redirectUrl" in result && result.redirectUrl) {
       return { success: true, redirectUrl: result.redirectUrl, orderId: result.orderId };
     }

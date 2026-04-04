@@ -8,6 +8,13 @@ export interface ITenantLocale {
   locale: string;
 }
 
+export interface ITenantPaymentConfig {
+  provider: string;
+  providerConfig: Record<string, unknown>;
+  enabled: boolean;
+}
+
+/** @deprecated Use payments[] array instead */
 export interface ITenantPayment {
   provider: string;
   providerConfig: Record<string, unknown>;
@@ -72,7 +79,9 @@ export interface ITenant extends Document {
   acpPaymentProvider: string;
   acpPaymentConfig: Record<string, unknown>;
   acpLegalLinks: ITenantAcpLegalLinks;
+  /** Legacy single-provider field. Use payments[] for new tenants. */
   payment: ITenantPayment;
+  payments: ITenantPaymentConfig[];
   store: ITenantStore;
   shipping: ITenantShipping;
   commissionRate: number;
@@ -111,6 +120,16 @@ const TenantSchema = new Schema<ITenant>(
     payment: {
       provider: { type: String, default: "mock" },
       providerConfig: { type: Schema.Types.Mixed, default: {} },
+    },
+    payments: {
+      type: [
+        {
+          provider: { type: String, required: true },
+          providerConfig: { type: Schema.Types.Mixed, default: {} },
+          enabled: { type: Boolean, default: true },
+        },
+      ],
+      default: [],
     },
     store: {
       enabled: { type: Boolean, default: false },

@@ -5,8 +5,6 @@ import { CollaborationInvite } from "@/lib/db/models/collaboration-invite";
 import { requireTenant } from "@/lib/auth/guards";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { PageHeader } from "@/components/platform/page-header";
-import { CopyButton } from "@/components/platform/copy-button";
-import { StatusBadge } from "@/components/platform/status-badge";
 import { CollaboratorsPanel } from "@/components/settings/collaborators-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -18,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Building2, CreditCard, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
+import { PaymentProvidersPanel } from "@/components/settings/payment-providers-panel";
 
 export default async function TenantSettingsPage() {
   const session = await requireTenant();
@@ -125,80 +124,58 @@ export default async function TenantSettingsPage() {
         <TabsContent value="payments">
           <Card>
             <CardHeader>
-              <CardTitle>Proveedor de Pagos</CardTitle>
+              <CardTitle>Proveedores de Pago</CardTitle>
               <CardDescription>
-                Configuracion del metodo de pago para tus ventas
+                Configura y activa los metodos de pago disponibles para tu tienda
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <InfoRow
-                label="Proveedor activo"
-                value={(tenant.payment?.provider || "mock").toUpperCase()}
-              />
-              {tenant.payment?.provider === "mercadopago" ? (
-                <>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">Estado:</span>
-                    <StatusBadge
-                      status={
-                        tenant.payment.providerConfig?.accessToken
-                          ? "active"
-                          : "inactive"
-                      }
-                    />
-                  </div>
-                  {tenant.payment.providerConfig?.accessToken && (
-                    <InfoRow
-                      label="Access Token"
-                      value={`APP_USR-...${String(tenant.payment.providerConfig.accessToken).slice(-6)}`}
-                    />
-                  )}
-                  <CopyableField
-                    label="Webhook URL"
-                    value={`${baseUrl}/api/payments/webhook?provider=mercadopago&tenantId=${tenant._id.toString()}`}
-                  />
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                    Configura esta URL como notificacion en tu panel de MercadoPago
-                    para que los pagos se confirmen automaticamente.
-                  </div>
-                </>
-              ) : tenant.payment?.provider === "transbank" ? (
-                <>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">Estado:</span>
-                    <StatusBadge
-                      status={
-                        tenant.payment.providerConfig?.commerceCode
-                          ? "active"
-                          : "inactive"
-                      }
-                    />
-                  </div>
-                  {tenant.payment.providerConfig?.commerceCode && (
-                    <InfoRow
-                      label="Codigo de Comercio"
-                      value={String(tenant.payment.providerConfig.commerceCode)}
-                    />
-                  )}
-                  <InfoRow
-                    label="Ambiente"
-                    value={
-                      tenant.payment.providerConfig?.environment === "production"
-                        ? "Produccion"
-                        : "Integracion (pruebas)"
-                    }
-                  />
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                    Transbank confirma pagos en el retorno del comprador. No requiere
-                    configuracion de webhook adicional.
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                  Usando proveedor de prueba (mock). Contacta al administrador
-                  de la plataforma para activar MercadoPago o Transbank WebPay.
-                </div>
-              )}
+            <CardContent>
+              {(() => {
+                // Build a lookup of existing tenant configs (payments[] or legacy payment)
+                const existing: Record<string, { providerConfig: Record<string, unknown>; enabled: boolean }> = {};
+                const src = tenant.payments?.length
+                  ? tenant.payments
+                  : tenant.payment?.provider
+                  ? [{ provider: tenant.payment.provider, providerConfig: tenant.payment.providerConfig ?? {}, enabled: true }]
+                  : [];
+                for (const cfg of src) {
+                  existing[cfg.provider] = {
+                    providerConfig: (cfg.providerConfig ?? {}) as Record<string, unknown>,
+                    enabled: cfg.enabled ?? true,
+                  };
+                }
+
+                const tenantId = tenant._id.toString();
+
+                // Always show all real providers so tenants can self-onboard
+                const allProviders = (["transbank", "mercadopago"] as const).map((provider) => {
+                  const cfg = existing[provider];
+                  const pc = cfg?.providerConfig ?? {};
+                  const environment = ((pc.environment as string) === "production" ? "production" : "integration") as "integration" | "production";
+                  const commerceCode = pc.commerceCode as string | undefined;
+                  const accessToken = pc.accessToken as string | undefined;
+                  // Detect whether production credentials are stored
+                  const hasProductionCredentials =
+                    provider === "transbank"
+                      ? !!(pc.commerceCode && pc.apiKey)
+                      : !!(pc.accessToken && pc.publicKey && pc.webhookSecret);
+                  return {
+                    provider,
+                    enabled: cfg?.enabled ?? false,
+                    configured: !!cfg,
+                    environment,
+                    hasProductionCredentials,
+                    maskedCommerceCode: commerceCode ? commerceCode.slice(-6) : undefined,
+                    maskedAccessToken: accessToken ? accessToken.slice(-6) : undefined,
+                    webhookUrl:
+                      provider === "mercadopago"
+                        ? `${baseUrl}/api/payments/webhook?provider=mercadopago&tenantId=${tenantId}`
+                        : undefined,
+                  };
+                });
+
+                return <PaymentProvidersPanel providers={allProviders} />;
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
@@ -280,14 +257,3 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CopyableField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1.5">
-      <p className="text-sm font-medium">{label}</p>
-      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2">
-        <code className="flex-1 truncate text-xs">{value}</code>
-        <CopyButton value={value} />
-      </div>
-    </div>
-  );
-}

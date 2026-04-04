@@ -4,6 +4,7 @@ import { PaymentTransaction } from "@/lib/db/models/payment-transaction";
 import { Tenant } from "@/lib/db/models/tenant";
 import { TransbankProvider } from "@/lib/payments/transbank-provider";
 import { finalizeSessionToOrder } from "@/lib/ucp/checkout-manager";
+import { getPlatformIntegrationConfig } from "@/lib/payments/platform-credentials";
 import type { TbkCommitResponse } from "@/lib/payments/transbank-types";
 
 function failureRedirect(sessionId: string | null) {
@@ -41,11 +42,21 @@ export async function POST(request: NextRequest) {
   const tenant = await Tenant.findById(tenantId);
   if (!tenant) return failureRedirect(sessionId);
 
+  // Resolve Transbank config: prefer payments[] array, fall back to legacy payment field
+  const tbkEntry =
+    tenant.payments?.find((p: { provider: string }) => p.provider === "transbank") ??
+    (tenant.payment?.provider === "transbank" ? tenant.payment : null);
+
+  if (!tbkEntry) return failureRedirect(sessionId);
+
+  // Inject platform credentials for integration environment
+  const tbkConfig: Record<string, unknown> =
+    tbkEntry.providerConfig?.environment === "integration"
+      ? getPlatformIntegrationConfig("transbank")
+      : (tbkEntry.providerConfig as Record<string, unknown>);
+
   const provider = new TransbankProvider();
-  const captureResult = await provider.capture(
-    token,
-    tenant.payment.providerConfig
-  );
+  const captureResult = await provider.capture(token, tbkConfig);
 
   // Update PaymentTransaction status
   await PaymentTransaction.findOneAndUpdate(

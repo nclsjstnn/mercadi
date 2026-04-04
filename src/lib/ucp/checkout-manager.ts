@@ -12,7 +12,21 @@ import { SESSION_TTL_MINUTES } from "./constants";
 import { Coupon } from "@/lib/db/models/coupon";
 import { validateAndCalculateCoupon } from "@/lib/utils/coupon";
 import type { ILineItem, IBuyer, IFulfillment } from "@/lib/db/models/checkout-session";
-import type { IShippingOption } from "@/lib/db/models/tenant";
+import type { IShippingOption, ITenantPaymentConfig } from "@/lib/db/models/tenant";
+import { getPlatformIntegrationConfig } from "@/lib/payments/platform-credentials";
+
+/** Returns the active payment configs for a tenant, preferring the new payments[] array
+ *  and falling back to the legacy single payment field. */
+function resolveActiveProviders(tenant: ITenant): ITenantPaymentConfig[] {
+  if (tenant.payments?.length) {
+    return tenant.payments.filter((p) => p.enabled);
+  }
+  // Legacy fallback
+  if (tenant.payment?.provider) {
+    return [{ provider: tenant.payment.provider, providerConfig: tenant.payment.providerConfig, enabled: true }];
+  }
+  return [];
+}
 
 interface CreateSessionInput {
   tenantSlug: string;
@@ -193,6 +207,8 @@ export async function updateSession(
 interface CompleteSessionOptions {
   /** ACP delegated payment data — when provided, skips internal payment provider */
   paymentData?: { token: string; provider: string };
+  /** Storefront/UCP provider selection when tenant has multiple enabled providers */
+  provider?: string;
 }
 
 export async function completeSession(sessionId: string, options?: CompleteSessionOptions) {
@@ -251,7 +267,33 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
     });
   } else {
     // Internal payment flow (UCP / storefront)
-    const provider = getPaymentProvider(tenant.payment.provider);
+    const activeProviders = resolveActiveProviders(tenant);
+    if (activeProviders.length === 0) {
+      throw new Error("No hay proveedor de pago configurado para este negocio");
+    }
+
+    let providerConfig: ITenantPaymentConfig;
+    if (options?.provider) {
+      const match = activeProviders.find((p) => p.provider === options.provider);
+      if (!match) {
+        throw new Error(`Proveedor de pago '${options.provider}' no disponible`);
+      }
+      providerConfig = match;
+    } else if (activeProviders.length === 1) {
+      providerConfig = activeProviders[0];
+    } else {
+      throw new Error("Este negocio tiene multiples proveedores de pago. Selecciona uno antes de continuar.");
+    }
+
+    const provider = getPaymentProvider(providerConfig.provider);
+
+    // For integration environment, substitute platform-managed test credentials
+    // so tenants never need to supply their own sandbox API keys.
+    const effectiveConfig: Record<string, unknown> =
+      providerConfig.providerConfig.environment === "integration" &&
+      (providerConfig.provider === "transbank" || providerConfig.provider === "mercadopago")
+        ? getPlatformIntegrationConfig(providerConfig.provider)
+        : providerConfig.providerConfig;
 
     const paymentResult = await provider.authorize(
       {
@@ -270,7 +312,7 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
           commissionAmount: commission.totalCommission,
         },
       },
-      tenant.payment.providerConfig
+      effectiveConfig
     );
 
     // Create payment transaction record
@@ -278,7 +320,7 @@ export async function completeSession(sessionId: string, options?: CompleteSessi
       transactionId: paymentResult.transactionId,
       tenantId: tenant._id,
       orderId,
-      provider: tenant.payment.provider,
+      provider: providerConfig.provider,
       amount: session.totals.total,
       currency: session.currency,
       status: paymentResult.success ? paymentResult.status : "failed",

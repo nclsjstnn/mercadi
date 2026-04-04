@@ -5,13 +5,13 @@ interface SendInviteEmailParams {
 }
 
 export async function sendInviteEmail({ to, name, inviteUrl }: SendInviteEmailParams) {
-  const apiKey = process.env.SENDGRID_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
-    console.warn("[invitations] SENDGRID_API_KEY not set — skipping email");
+    console.warn("[invitations] BREVO_API_KEY not set — skipping email");
     return;
   }
 
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL ?? "noreply@mercadi.cl";
+  const fromEmail = process.env.BREVO_FROM_EMAIL ?? "noreply@mercadi.cl";
   const fromName = "Mercadi";
 
   const html = `
@@ -64,22 +64,22 @@ export async function sendInviteEmail({ to, name, inviteUrl }: SendInviteEmailPa
 </body>
 </html>`;
 
-  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "api-key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      personalizations: [{ to: [{ email: to, name }] }],
-      from: { email: fromEmail, name: fromName },
+      sender: { email: fromEmail, name: fromName },
+      to: [{ email: to, name }],
       subject: "Tu invitación a Mercadi está lista",
-      content: [{ type: "text/html", value: html }],
+      htmlContent: html,
     }),
   });
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`SendGrid error ${res.status}: ${body}`);
+    throw new Error(`Brevo error ${res.status}: ${body}`);
   }
 }
