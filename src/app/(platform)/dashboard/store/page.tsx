@@ -7,6 +7,8 @@ import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { StoreSettingsForm } from "@/components/dashboard/store-settings-form";
 import { TemplateEditor } from "@/components/dashboard/template-editor";
 import { CustomDomainSettings } from "@/components/dashboard/custom-domain-settings";
+import { ThemeGeneratorPanel } from "@/components/dashboard/theme-generator-panel";
+import type { GeneratedTheme } from "@/actions/store-theme";
 
 export const metadata = {
   title: "Tienda - Dashboard",
@@ -53,6 +55,36 @@ export default async function StoreSettingsPage() {
         <p className="text-muted-foreground">
           Configura tu tienda publica y personaliza su apariencia.
         </p>
+      </div>
+
+      {/* AI Theme Generator */}
+      <div className="rounded-lg border p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Diseño con IA</h2>
+          <p className="text-sm text-muted-foreground">
+            Describe tu negocio y generamos una paleta de colores y tipografía personalizada.
+          </p>
+        </div>
+        <ThemeGeneratorPanel
+          tenantSlug={tenant.slug}
+          initialPrompt={store.theme?.themePrompt || ""}
+          initialTheme={
+            store.theme?.themeGeneratedAt
+              ? ({
+                  primaryColor: store.theme.primaryColor,
+                  secondaryColor: store.theme.secondaryColor,
+                  accentColor: store.theme.accentColor,
+                  backgroundColor: store.theme.backgroundColor || "#ffffff",
+                  surfaceColor: store.theme.surfaceColor || "#f9fafb",
+                  textColor: store.theme.textColor || "#111827",
+                  mutedColor: store.theme.mutedColor || "#6b7280",
+                  borderRadius: store.theme.borderRadius || "8px",
+                  headingFont: store.theme.headingFont || "",
+                  bodyFont: store.theme.bodyFont || "",
+                } as GeneratedTheme)
+              : null
+          }
+        />
       </div>
 
       {/* General + Theme */}

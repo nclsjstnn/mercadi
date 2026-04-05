@@ -34,36 +34,70 @@ export default async function StoreLayout({
   const plan = (owner?.plan || "free") as PlanType;
   const showBranding = !PLAN_LIMITS[plan].removeBranding;
 
-  const theme = tenant.store?.theme || {
-    primaryColor: "#2563eb",
-    secondaryColor: "#1e40af",
-    accentColor: "#f59e0b",
-    logoUrl: "",
-    faviconUrl: "",
-  };
+  const theme = tenant.store?.theme || {};
+
+  const primary = theme.primaryColor || "#2563eb";
+  const secondary = theme.secondaryColor || "#1e40af";
+  const accent = theme.accentColor || "#f59e0b";
+  const bg = theme.backgroundColor || "#ffffff";
+  const surface = theme.surfaceColor || "#f9fafb";
+  const text = theme.textColor || "#111827";
+  const muted = theme.mutedColor || "#6b7280";
+  const radius = theme.borderRadius || "8px";
+  const headingFont = theme.headingFont || "";
+  const bodyFont = theme.bodyFont || "";
+
+  // Build Google Fonts URL if AI theme has custom fonts
+  const googleFontsHref =
+    headingFont || bodyFont
+      ? `https://fonts.googleapis.com/css2?${[
+          headingFont && `family=${encodeURIComponent(headingFont)}:wght@400;600;700`,
+          bodyFont && bodyFont !== headingFont && `family=${encodeURIComponent(bodyFont)}:wght@400;500;600`,
+        ]
+          .filter(Boolean)
+          .join("&")}&display=swap`
+      : null;
+
+  const fontStack = (name: string) =>
+    name ? `"${name}", system-ui, sans-serif` : "system-ui, sans-serif";
 
   return (
-    <div
-      style={
-        {
-          "--store-primary": theme.primaryColor,
-          "--store-secondary": theme.secondaryColor,
-          "--store-accent": theme.accentColor,
-        } as React.CSSProperties
-      }
-    >
-      <CartProvider tenantSlug={tenant.slug}>
-        <StoreHeader
-          businessName={tenant.name}
-          tenantSlug={tenant.slug}
-          logoUrl={theme.logoUrl || undefined}
-        />
-        <main className="mx-auto min-h-[60vh] max-w-7xl px-4 py-8 sm:px-6">
-          {children}
-        </main>
-        <StoreFooter businessName={tenant.name} showBranding={showBranding} />
-        <CartButton tenantSlug={tenant.slug} />
-      </CartProvider>
-    </div>
+    <>
+      {googleFontsHref && (
+        <link rel="stylesheet" href={googleFontsHref} />
+      )}
+      <div
+        style={
+          {
+            "--store-primary": primary,
+            "--store-secondary": secondary,
+            "--store-accent": accent,
+            "--store-bg": bg,
+            "--store-surface": surface,
+            "--store-text": text,
+            "--store-muted": muted,
+            "--store-radius": radius,
+            "--store-font-heading": fontStack(headingFont),
+            "--store-font-body": fontStack(bodyFont),
+            backgroundColor: bg,
+            color: text,
+            fontFamily: fontStack(bodyFont),
+          } as React.CSSProperties
+        }
+      >
+        <CartProvider tenantSlug={tenant.slug}>
+          <StoreHeader
+            businessName={tenant.name}
+            tenantSlug={tenant.slug}
+            logoUrl={theme.logoUrl || undefined}
+          />
+          <main className="mx-auto min-h-[60vh] max-w-7xl px-4 py-8 sm:px-6">
+            {children}
+          </main>
+          <StoreFooter businessName={tenant.name} showBranding={showBranding} />
+          <CartButton tenantSlug={tenant.slug} />
+        </CartProvider>
+      </div>
+    </>
   );
 }

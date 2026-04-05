@@ -5,7 +5,14 @@ interface StoreFooterProps {
 
 export function StoreFooter({ businessName, showBranding }: StoreFooterProps) {
   return (
-    <footer className="border-t bg-white py-6 text-center text-sm text-gray-400">
+    <footer
+      className="border-t py-6 text-center text-sm"
+      style={{
+        backgroundColor: "var(--store-surface, white)",
+        color: "var(--store-muted, #9ca3af)",
+        borderColor: "var(--store-muted, #e5e7eb)33",
+      }}
+    >
       {showBranding ? (
         <p>
           Powered by{" "}

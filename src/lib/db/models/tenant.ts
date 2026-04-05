@@ -26,6 +26,16 @@ export interface ITenantStoreTheme {
   accentColor: string;
   logoUrl: string;
   faviconUrl: string;
+  // AI-generated design tokens
+  backgroundColor: string;
+  surfaceColor: string;
+  textColor: string;
+  mutedColor: string;
+  borderRadius: string;
+  headingFont: string;
+  bodyFont: string;
+  themePrompt: string;
+  themeGeneratedAt?: Date;
 }
 
 export interface ITenantStore {
@@ -139,6 +149,15 @@ const TenantSchema = new Schema<ITenant>(
         accentColor: { type: String, default: "#f59e0b" },
         logoUrl: { type: String, default: "" },
         faviconUrl: { type: String, default: "" },
+        backgroundColor: { type: String, default: "" },
+        surfaceColor: { type: String, default: "" },
+        textColor: { type: String, default: "" },
+        mutedColor: { type: String, default: "" },
+        borderRadius: { type: String, default: "" },
+        headingFont: { type: String, default: "" },
+        bodyFont: { type: String, default: "" },
+        themePrompt: { type: String, default: "" },
+        themeGeneratedAt: { type: Date },
       },
       template: { type: String, default: "" },
       customDomain: { type: String, default: "" },

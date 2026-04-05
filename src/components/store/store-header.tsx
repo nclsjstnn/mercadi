@@ -14,7 +14,10 @@ export function StoreHeader({ businessName, tenantSlug, logoUrl }: StoreHeaderPr
   const { totalItems } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white">
+    <header
+      className="sticky top-0 z-50 border-b"
+      style={{ backgroundColor: "var(--store-surface, white)", borderColor: "var(--store-muted, #e5e7eb)33" }}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href={`/store/${tenantSlug}`} className="flex items-center gap-3">
           {logoUrl && (
@@ -22,7 +25,7 @@ export function StoreHeader({ businessName, tenantSlug, logoUrl }: StoreHeaderPr
           )}
           <span
             className="text-xl font-bold"
-            style={{ color: "var(--store-primary)" }}
+            style={{ color: "var(--store-primary)", fontFamily: "var(--store-font-heading)" }}
           >
             {businessName}
           </span>
@@ -30,13 +33,15 @@ export function StoreHeader({ businessName, tenantSlug, logoUrl }: StoreHeaderPr
         <nav className="flex items-center gap-6">
           <Link
             href={`/store/${tenantSlug}`}
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="text-sm font-medium"
+            style={{ color: "var(--store-muted, #6b7280)" }}
           >
             Productos
           </Link>
           <Link
             href={`/store/${tenantSlug}/cart`}
-            className="relative flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="relative flex items-center gap-1 text-sm font-medium"
+            style={{ color: "var(--store-muted, #6b7280)" }}
           >
             <ShoppingCart className="h-5 w-5" />
             {totalItems > 0 && (

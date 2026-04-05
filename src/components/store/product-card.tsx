@@ -57,7 +57,14 @@ export function ProductCard({
   const pdpHref = `/store/${tenantSlug}/product/${id}`;
 
   return (
-    <Card className="group flex flex-col overflow-hidden border transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
+    <Card
+      className="group flex flex-col overflow-hidden border transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+      style={{
+        backgroundColor: "var(--store-surface, white)",
+        borderRadius: "var(--store-radius, 8px)",
+        borderColor: "var(--store-muted, #e5e7eb)22",
+      }}
+    >
       {/* Image */}
       <Link href={pdpHref} className="relative block aspect-square overflow-hidden bg-muted shrink-0">
         {image ? (
@@ -100,12 +107,21 @@ export function ProductCard({
         {/* Category + title */}
         <div className="flex-1 space-y-1">
           {category && (
-            <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <p
+              className="text-[11px] font-medium uppercase tracking-widest"
+              style={{ color: "var(--store-muted, #6b7280)" }}
+            >
               {category}
             </p>
           )}
           <Link href={pdpHref}>
-            <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors hover:text-primary">
+            <h3
+              className="line-clamp-2 text-sm font-semibold leading-snug transition-colors"
+              style={{
+                color: "var(--store-text, #111827)",
+                fontFamily: "var(--store-font-heading)",
+              }}
+            >
               {title}
             </h3>
           </Link>
@@ -133,7 +149,10 @@ export function ProductCard({
         {/* Add to cart controls */}
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center overflow-hidden rounded-lg border bg-background">
+            <div
+              className="flex items-center overflow-hidden border bg-background"
+              style={{ borderRadius: "var(--store-radius, 8px)" }}
+            >
               <button
                 type="button"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -159,8 +178,9 @@ export function ProductCard({
               type="button"
               onClick={handleAdd}
               disabled={outOfStock}
-              className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-9 flex-1 items-center justify-center gap-1.5 text-sm font-semibold text-white transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               style={{
+                borderRadius: "var(--store-radius, 8px)",
                 backgroundColor: added
                   ? "#16a34a"
                   : outOfStock

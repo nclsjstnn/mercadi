@@ -28,7 +28,12 @@ export default async function StorePLP({
 
   return (
     <div>
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Productos</h1>
+      <h1
+        className="mb-8 text-2xl font-bold"
+        style={{ color: "var(--store-text, #111827)", fontFamily: "var(--store-font-heading)" }}
+      >
+        Productos
+      </h1>
       {products.length === 0 ? (
         <p className="text-center text-gray-500">
           No hay productos disponibles en este momento.
