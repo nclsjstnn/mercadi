@@ -34,11 +34,12 @@ export default async function StorePLP({
           No hay productos disponibles en este momento.
         </p>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard
               key={product._id.toString()}
               id={product._id.toString()}
+              ucpItemId={product.ucpItemId}
               tenantSlug={tenantSlug}
               title={product.title}
               price={product.price}
@@ -46,6 +47,8 @@ export default async function StorePLP({
               currency={tenant.locale.currency}
               image={product.images?.[0]}
               category={product.category}
+              stock={product.stock}
+              intangible={product.intangible}
             />
           ))}
         </div>

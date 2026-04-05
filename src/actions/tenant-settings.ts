@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
 import { requireTenant } from "@/lib/auth/guards";
 import { revalidatePath } from "next/cache";
+import { notifyPaymentMethodConfigured } from "@/lib/emails/notifications";
 
 type SavePaymentProviderInput = {
   environment: "integration" | "production";
@@ -85,6 +86,12 @@ export async function savePaymentProvider(
 
     tenant.markModified("payments");
     await tenant.save();
+
+    notifyPaymentMethodConfigured({
+      tenantId: session.user.tenantId,
+      provider,
+      environment: input.environment,
+    }).catch((err) => console.error("[emails] notifyPaymentMethodConfigured failed:", err));
 
     revalidatePath("/dashboard/settings");
     return { success: true };

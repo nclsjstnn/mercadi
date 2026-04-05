@@ -6,6 +6,7 @@ import { Tenant } from "@/lib/db/models/tenant";
 import { User } from "@/lib/db/models/user";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { isReservedSubdomain } from "@/lib/config/reserved-subdomains";
+import { notifyStoreCreated } from "@/lib/emails/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,9 +68,21 @@ export async function POST(request: NextRequest) {
     });
 
     // Link user to tenant
-    await User.findByIdAndUpdate(session.user.id, {
-      tenantId: tenant._id,
-    });
+    const dbUserFull = await User.findByIdAndUpdate(
+      session.user.id,
+      { tenantId: tenant._id },
+      { new: true }
+    ).select("email name").lean();
+
+    if (dbUserFull) {
+      notifyStoreCreated({
+        ownerEmail: dbUserFull.email,
+        ownerName: dbUserFull.name,
+        ownerId: session.user.id,
+        storeName: name,
+        storeSlug: slug.toLowerCase(),
+      }).catch((err) => console.error("[emails] notifyStoreCreated failed:", err));
+    }
 
     return NextResponse.json({ tenant }, { status: 201 });
   } catch (error) {

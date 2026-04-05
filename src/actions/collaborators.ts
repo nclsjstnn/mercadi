@@ -10,6 +10,7 @@ import { requireAuth, requireTenant } from "@/lib/auth/guards";
 import { getTenantAccessLevel } from "@/lib/auth/tenant-access";
 import { inviteCollaboratorSchema } from "@/lib/validators/collaborator";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
+import { notifyCollaboratorAdded, notifyCollaboratorRemoved } from "@/lib/emails/notifications";
 
 async function requireTenantOwner() {
   const session = await requireTenant();
@@ -99,14 +100,26 @@ export async function revokeCollaborator(userId: string) {
   const session = await requireTenantOwner();
   await connectDB();
 
+  const [tenant, collaborator] = await Promise.all([
+    Tenant.findById(session.user.tenantId).select("name").lean(),
+    User.findById(userId).select("email name tenantId").lean(),
+  ]);
+
   await Tenant.findByIdAndUpdate(session.user.tenantId, {
     $pull: { collaborators: userId },
   });
 
   // If the collaborator's active tenantId points to this tenant, clear it
-  const user = await User.findById(userId).select("tenantId").lean();
-  if (user?.tenantId?.toString() === session.user.tenantId) {
+  if (collaborator?.tenantId?.toString() === session.user.tenantId) {
     await User.findByIdAndUpdate(userId, { $unset: { tenantId: 1 } });
+  }
+
+  if (tenant && collaborator) {
+    notifyCollaboratorRemoved({
+      collaboratorEmail: collaborator.email,
+      collaboratorName: collaborator.name,
+      storeName: tenant.name,
+    }).catch((err) => console.error("[emails] notifyCollaboratorRemoved failed:", err));
   }
 
   revalidatePath("/dashboard/settings");
@@ -173,9 +186,20 @@ export async function acceptInvite(token: string) {
   });
 
   // Set user's active tenant to this tenant
-  await User.findByIdAndUpdate(session.user.id, {
-    tenantId: invite.tenantId,
-  });
+  const currentUser = await User.findByIdAndUpdate(
+    session.user.id,
+    { tenantId: invite.tenantId },
+    { new: true }
+  ).select("email name").lean();
+
+  const tenantDoc = await Tenant.findById(invite.tenantId).select("name").lean();
+  if (currentUser && tenantDoc) {
+    notifyCollaboratorAdded({
+      collaboratorEmail: currentUser.email,
+      collaboratorName: currentUser.name,
+      storeName: tenantDoc.name,
+    }).catch((err) => console.error("[emails] notifyCollaboratorAdded failed:", err));
+  }
 
   return { success: true };
 }

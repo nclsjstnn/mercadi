@@ -1,11 +1,12 @@
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
-import { User } from "@/lib/db/models/user";
+import { User, DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/db/models/user";
 import { CollaborationInvite } from "@/lib/db/models/collaboration-invite";
 import { requireTenant } from "@/lib/auth/guards";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { PageHeader } from "@/components/platform/page-header";
 import { CollaboratorsPanel } from "@/components/settings/collaborators-panel";
+import { NotificationPreferencesPanel } from "@/components/settings/notification-preferences-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -14,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, CreditCard, Receipt, Truck, Users } from "lucide-react";
+import { Bell, Building2, CreditCard, Receipt, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 import { PaymentProvidersPanel } from "@/components/settings/payment-providers-panel";
 
@@ -27,6 +28,15 @@ export default async function TenantSettingsPage() {
 
   const isOwner = tenant.ownerId.toString() === session.user.id;
 
+  // Current user preferences
+  const dbUserForPrefs = await User.findById(session.user.id)
+    .select("plan notificationPreferences")
+    .lean();
+  const userPrefs = {
+    ...DEFAULT_NOTIFICATION_PREFERENCES,
+    ...(dbUserForPrefs?.notificationPreferences ?? {}),
+  };
+
   // Fetch collaborator data only for owner
   let collaborators: { _id: string; name: string; email: string }[] = [];
   let pendingInvites: { _id: string; invitedEmail: string; token: string; expiresAt: string }[] = [];
@@ -34,7 +44,7 @@ export default async function TenantSettingsPage() {
   let maxCollaborators = 0;
 
   if (isOwner) {
-    const dbUser = await User.findById(session.user.id).select("plan").lean();
+    const dbUser = dbUserForPrefs;
     const plan = ((dbUser?.plan as string) || "free") as PlanType;
     isPro = plan === "pro";
     maxCollaborators = PLAN_LIMITS[plan].maxCollaboratorsPerTenant;
@@ -103,6 +113,10 @@ export default async function TenantSettingsPage() {
               Colaboradores
             </TabsTrigger>
           )}
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            Notificaciones
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="business">
@@ -243,6 +257,45 @@ export default async function TenantSettingsPage() {
             </Card>
           </TabsContent>
         )}
+
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notificaciones por correo</CardTitle>
+              <CardDescription>
+                Elige qué eventos te notificamos por email
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NotificationPreferencesPanel
+                items={[
+                  {
+                    key: "orderReady",
+                    label: "Nuevo pedido",
+                    description: "Cuando un cliente realiza un pedido en tu tienda",
+                    value: userPrefs.orderReady,
+                  },
+                  ...(isOwner
+                    ? [
+                        {
+                          key: "paymentReceived",
+                          label: "Pago recibido",
+                          description: "Cuando se confirma un pago en tu tienda",
+                          value: userPrefs.paymentReceived,
+                        },
+                        {
+                          key: "storeConfigured",
+                          label: "Cambios de configuración",
+                          description: "Cuando se configura un método de pago o una opción de envío",
+                          value: userPrefs.storeConfigured,
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

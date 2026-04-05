@@ -6,6 +6,7 @@ import { Tenant } from "@/lib/db/models/tenant";
 import { requireTenant } from "@/lib/auth/guards";
 import { shippingOptionsSchema } from "@/lib/validators/shipping";
 import { revalidatePath } from "next/cache";
+import { notifyShippingConfigured } from "@/lib/emails/notifications";
 
 export async function updateShippingOptions(
   options: Array<{
@@ -32,6 +33,11 @@ export async function updateShippingOptions(
   await Tenant.findByIdAndUpdate(session.user.tenantId, {
     "shipping.options": withIds,
   });
+
+  notifyShippingConfigured({
+    tenantId: session.user.tenantId,
+    optionCount: withIds.length,
+  }).catch((err) => console.error("[emails] notifyShippingConfigured failed:", err));
 
   revalidatePath("/dashboard/settings");
   return { success: true };

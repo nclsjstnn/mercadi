@@ -3,8 +3,10 @@
 import { nanoid } from "nanoid";
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
+import { User } from "@/lib/db/models/user";
 import { requireAdmin } from "@/lib/auth/guards";
 import { revalidatePath } from "next/cache";
+import { notifyStoreCreated } from "@/lib/emails/notifications";
 
 export async function createTenant(formData: FormData) {
   await requireAdmin();
@@ -28,6 +30,17 @@ export async function createTenant(formData: FormData) {
     ucpApiKey: `ucp_${nanoid(32)}`,
     payment: { provider: "mock", providerConfig: {} },
   });
+
+  const owner = await User.findById(ownerId).select("email name").lean();
+  if (owner) {
+    notifyStoreCreated({
+      ownerEmail: owner.email,
+      ownerName: owner.name,
+      ownerId,
+      storeName: name,
+      storeSlug: slug,
+    }).catch((err) => console.error("[emails] notifyStoreCreated failed:", err));
+  }
 
   revalidatePath("/admin/tenants");
 }

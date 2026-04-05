@@ -14,6 +14,7 @@ import { validateAndCalculateCoupon } from "@/lib/utils/coupon";
 import type { ILineItem, IBuyer, IFulfillment } from "@/lib/db/models/checkout-session";
 import type { IShippingOption, ITenantPaymentConfig } from "@/lib/db/models/tenant";
 import { getPlatformIntegrationConfig } from "@/lib/payments/platform-credentials";
+import { notifyOrderReady, notifyPaymentReceived, notifyCustomerOrderCreated } from "@/lib/emails/notifications";
 
 /** Returns the active payment configs for a tenant, preferring the new payments[] array
  *  and falling back to the legacy single payment field. */
@@ -439,6 +440,48 @@ async function _createOrderFromSession(
   // Mark session complete
   session.status = "completed";
   await session.save();
+
+  // Fire email notifications (non-blocking — failures must not break order flow)
+
+  notifyCustomerOrderCreated({
+    orderId,
+    tenantName: tenant.name,
+    buyer: { name: session.buyer!.name, email: session.buyer!.email },
+    lineItems: session.lineItems.map((item) => ({
+      title: item.title,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    totals: session.totals,
+    currency: session.currency,
+  }).catch((err) => console.error("[emails] notifyCustomerOrderCreated failed:", err));
+
+  const txn = await PaymentTransaction.findOne({ orderId }).select("provider").lean();
+  const provider = txn?.provider ?? "unknown";
+
+  notifyOrderReady({
+    orderId,
+    tenantId: tenant._id.toString(),
+    tenantName: tenant.name,
+    buyer: { name: session.buyer!.name, email: session.buyer!.email },
+    lineItems: session.lineItems.map((item) => ({
+      title: item.title,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    total: session.totals.total,
+    currency: session.currency,
+  }).catch((err) => console.error("[emails] notifyOrderReady failed:", err));
+
+  notifyPaymentReceived({
+    orderId,
+    tenantId: tenant._id.toString(),
+    tenantName: tenant.name,
+    buyerName: session.buyer!.name,
+    total: session.totals.total,
+    currency: session.currency,
+    provider,
+  }).catch((err) => console.error("[emails] notifyPaymentReceived failed:", err));
 
   return order;
 }
