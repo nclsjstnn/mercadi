@@ -10,5 +10,11 @@
       ],
       "destination": "/store/:slug/:path*"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/billing",
+      "schedule": "0 13 * * *"
+    }
   ]
 }

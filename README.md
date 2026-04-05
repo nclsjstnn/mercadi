@@ -15,6 +15,8 @@ Multi-tenant SaaS that enables Chilean small businesses to expose product catalo
   - [3. Mock Provider (instant approval)](#3-mock-provider-instant-approval)
   - [4. UCP API (AI agent flow)](#4-ucp-api-ai-agent-flow)
 - [Payment Providers](#payment-providers)
+- [Subscription Billing (Transbank OneClick)](#subscription-billing-transbank-oneclick)
+- [Email Notifications (Brevo)](#email-notifications-brevo)
 - [Multi-Tenancy](#multi-tenancy)
 - [UCP Endpoints Reference](#ucp-endpoints-reference)
 - [Roles & Access](#roles--access)
@@ -76,9 +78,11 @@ open → buyer_set → fulfillment_set → pending_payment → completed
 | UI | Tailwind CSS v4 + shadcn/ui |
 | Database | MongoDB via Mongoose |
 | Auth | NextAuth.js v5 (credentials + JWT) |
-| Payments | Transbank WebPay Plus, MercadoPago Checkout Pro, Mock |
+| Store payments | Transbank WebPay Plus, MercadoPago Checkout Pro, Mock |
+| Subscription billing | Transbank OneClick Mall (recurring SaaS charges) |
+| Email | Brevo (transactional + notifications) |
 | AI Testing | Google Gemini API |
-| Deployment | Vercel |
+| Deployment | Vercel (with daily cron for billing) |
 
 ---
 
@@ -113,6 +117,20 @@ STOREFRONT_BASE_DOMAIN=localhost
 
 # Required for Gemini AI test flow
 GEMINI_API_KEY=your-key-from-aistudio.google.com
+
+# Brevo transactional email (get at app.brevo.com → API Keys)
+BREVO_API_KEY=
+BREVO_FROM_EMAIL=noreply@mercadi.cl
+
+# Transbank OneClick — platform subscription billing (Mercadi charges tenant admins)
+# Leave TBK_ONECLICK_ENVIRONMENT=integration to use Transbank's public test credentials automatically.
+TBK_ONECLICK_ENVIRONMENT=integration
+TBK_ONECLICK_COMMERCE_CODE=       # production parent commerce code
+TBK_ONECLICK_CHILD_COMMERCE_CODE= # production child commerce code (often same as parent)
+TBK_ONECLICK_API_KEY=             # production API key
+
+# Cron secret — Vercel injects this as Authorization: Bearer <secret> on cron calls
+CRON_SECRET=
 ```
 
 ### 4. Start development server
@@ -356,6 +374,135 @@ Total commission:       CLP   595
 
 Merchant receives:      CLP 11,305
 ```
+
+---
+
+---
+
+## Subscription Billing (Transbank OneClick)
+
+Mercadi charges tenant admins monthly for the **Pro plan** (CLP 9,990/month) using Transbank OneClick Mall — a saved-card recurring payment product that does not require a browser redirect on each charge.
+
+### Flow
+
+```
+1. User clicks "Activar Plan Pro"
+   POST /api/subscriptions/oneclick/start
+   → Transbank: POST /inscriptions  →  { token, url_webpay }
+   → Browser redirects to url_webpay
+
+2. User enrolls card at Transbank's hosted page
+
+3. Transbank POSTs TBK_TOKEN to /api/subscriptions/oneclick/finish
+   → Transbank: PUT /inscriptions/{token}  →  { tbk_user, card_type, card_number }
+   → Save tbk_user to Subscription document
+   → Execute first charge immediately (authorize)
+   → On success: User.plan = "pro", nextBillingDate = now + 30 days
+
+4. Daily cron (13:00 UTC) calls GET /api/cron/billing
+   → Finds subscriptions where nextBillingDate ≤ today AND status active|past_due
+   → Calls chargeSubscription(sub) for each
+   → On success: nextBillingDate += 30, failureCount = 0
+   → On failure: failureCount++; at 3 → status=cancelled, plan=free
+
+5. User cancels: POST /api/subscriptions/oneclick/cancel
+   → Transbank: DELETE /inscriptions (removes saved card)
+   → status=cancelled, plan=free (immediate)
+```
+
+### Models
+
+| Model | Purpose |
+|---|---|
+| `Subscription` | One per user. Tracks status, tbkUser token, card info, next billing date, failure count |
+| `SubscriptionTransaction` | One per charge attempt. Full Transbank response, authorization code, billing period, attempt number |
+
+### Subscription statuses
+
+| Status | Meaning |
+|---|---|
+| `enrolling` | User redirected to Transbank, enrollment not yet confirmed |
+| `active` | Card enrolled, charges running normally |
+| `past_due` | Last charge failed (1–2 failures), retry pending |
+| `cancelled` | Cancelled by user or after 3 charge failures |
+
+### Integration test credentials
+
+Leave `TBK_ONECLICK_ENVIRONMENT=integration` — platform credentials are injected automatically:
+
+| Field | Value |
+|---|---|
+| Parent commerce code | `597055555541` |
+| Child commerce code | `597055555542` |
+| API key | `579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C` |
+
+### Cron job
+
+Configured in `vercel.json` as `0 13 * * *` (13:00 UTC = 10:00 Chile Standard Time).
+
+The cron endpoint is secured by `Authorization: Bearer $CRON_SECRET`. Vercel injects this automatically when invoking cron routes; set the same value in your environment variables.
+
+To invoke manually for testing:
+
+```bash
+curl -X GET https://your-domain.com/api/cron/billing \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+### Admin traceability
+
+- **`/admin/subscriptions`** — KPI cards (active count, MRR, total revenue, past-due alerts) + full subscription table
+- **`/admin/subscriptions/:id`** — Complete card + TBK token data, full transaction table per subscription
+- **Admin actions** (from detail page): **Cobrar ahora** (manual retry), **Posponer 30 días** (skip next cycle), **Cancelar suscripción**
+
+---
+
+## Email Notifications (Brevo)
+
+All transactional email goes through [Brevo](https://app.brevo.com) via the `POST /v3/smtp/email` API. No SDK dependency — raw fetch in `src/lib/emails/brevo.ts`.
+
+Set `BREVO_API_KEY` and `BREVO_FROM_EMAIL` in your environment. Verify the sender domain in Brevo before sending to production.
+
+### Events and recipients
+
+| Event | Recipients | Respects preferences |
+|---|---|---|
+| Order confirmed (customer receipt) | Buyer | — |
+| Order ready to fulfill | Tenant owner + collaborators | `orderReady` |
+| Payment received | Tenant owner | `paymentReceived` |
+| New store created | Tenant owner + all admins | `storeConfigured` / `tenantCreated` |
+| Payment method configured | Tenant owner | `storeConfigured` |
+| Shipping options updated | Tenant owner | `storeConfigured` |
+| New tenant registered | All admin users | `tenantCreated` |
+| Any payment received (platform) | All admin users | `adminPaymentReceived` |
+| Collaborator accepted invite | The collaborator | — |
+| Collaborator removed | The collaborator | — |
+| Platform invite | Invitee | — |
+
+### Notification preferences
+
+Each user has a `notificationPreferences` field on their `User` document (defaults all to `true`):
+
+```typescript
+{
+  orderReady: boolean;           // tenant_owner + collaborators
+  paymentReceived: boolean;      // tenant_owner
+  storeConfigured: boolean;      // tenant_owner (payment method + shipping changes)
+  tenantCreated: boolean;        // admin only
+  adminPaymentReceived: boolean; // admin only
+}
+```
+
+Preferences are toggled via server action `updateNotificationPreferences()` from:
+- **`/dashboard/settings → Notificaciones`** — tenant owners and collaborators
+- **`/admin/settings → Notificaciones`** — platform admins
+
+### Adding a new notification
+
+1. Add a function in `src/lib/emails/notifications.ts`
+2. Use `emailLayout()` + `btnStyle()` from `src/lib/emails/brevo.ts`
+3. Check preferences with the `pref(user, key)` helper before sending
+4. Call `.catch(err => console.error(...))` at the call site (never let email failures break the main flow)
 
 ---
 

@@ -20,6 +20,12 @@ import {
   Ticket,
   Users,
   FileSpreadsheet,
+  CreditCard,
+  Bell,
+  Wallet,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 export const metadata = {
@@ -164,7 +170,10 @@ export default function DocsPage() {
             <NavItem href="#shipping" step="5" label="Configurar envio" />
             <NavItem href="#promotions" step="6" label="Promociones y cupones" />
             <NavItem href="#collaborators" step="7" label="Colaboradores" />
-            <NavItem href="#ucp-settings" step="8" label="Configurar UCP" />
+            <NavItem href="#billing" step="8" label="Plan y facturacion" />
+            <NavItem href="#payments" step="9" label="Metodos de pago" />
+            <NavItem href="#notifications" step="10" label="Notificaciones" />
+            <NavItem href="#ucp-settings" step="11" label="Configurar UCP" />
 
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               API UCP
@@ -177,7 +186,7 @@ export default function DocsPage() {
             <p className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Gemini
             </p>
-            <NavItem href="#gemini-setup" step="9" label="Configurar Gemini" />
+            <NavItem href="#gemini-setup" step="12" label="Configurar Gemini" />
             <NavItem href="#gemini-functions" label="Function declarations" />
             <NavItem href="#gemini-example" label="Ejemplo completo" />
             <NavItem href="#gemini-test" label="Probar con demo" />
@@ -783,11 +792,262 @@ export default function DocsPage() {
               </div>
             </section>
 
-            {/* Step 7: UCP Settings */}
+            {/* Step 8: Plan & Billing */}
+            <section id="billing" className="scroll-mt-24 space-y-4">
+              <SectionHeading id="" step="8" icon={CreditCard} title="Plan y facturacion" />
+              <p className="text-muted-foreground">
+                Mercadi ofrece dos planes. El plan <strong>Free</strong> te permite
+                empezar de inmediato sin costo. El plan <strong>Pro</strong> desbloquea
+                colaboradores, dominio personalizado, tienda sin branding Mercadi, hasta
+                3 negocios y proveedores de pago reales.
+              </p>
+
+              <div className="overflow-x-auto rounded-xl border bg-card">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-4 py-3 text-left font-medium">Caracteristica</th>
+                      <th className="px-4 py-3 text-center font-medium">Free</th>
+                      <th className="px-4 py-3 text-center font-medium text-primary">Pro · $9.990/mes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-muted-foreground">
+                    {[
+                      ["Negocios", "1", "Hasta 3"],
+                      ["Productos", "Ilimitados", "Ilimitados"],
+                      ["Tienda publica", <CheckCircle2 key="f-store" className="mx-auto h-4 w-4 text-green-500" />, <CheckCircle2 key="p-store" className="mx-auto h-4 w-4 text-green-500" />],
+                      ["Branding Mercadi en tienda", <CheckCircle2 key="f-brand" className="mx-auto h-4 w-4 text-amber-500" />, <XCircle key="p-brand" className="mx-auto h-4 w-4 text-green-500" />],
+                      ["Dominio personalizado", <XCircle key="f-dom" className="mx-auto h-4 w-4 text-muted-foreground" />, <CheckCircle2 key="p-dom" className="mx-auto h-4 w-4 text-green-500" />],
+                      ["Transbank / MercadoPago", <XCircle key="f-pay" className="mx-auto h-4 w-4 text-muted-foreground" />, <CheckCircle2 key="p-pay" className="mx-auto h-4 w-4 text-green-500" />],
+                      ["Colaboradores por negocio", "0", "Hasta 5"],
+                      ["Catalogo UCP (agentes IA)", <CheckCircle2 key="f-ucp" className="mx-auto h-4 w-4 text-green-500" />, <CheckCircle2 key="p-ucp" className="mx-auto h-4 w-4 text-green-500" />],
+                    ].map(([feat, free, pro], i) => (
+                      <tr key={i} className="border-b last:border-0">
+                        <td className="px-4 py-2.5">{feat}</td>
+                        <td className="px-4 py-2.5 text-center">{free}</td>
+                        <td className="px-4 py-2.5 text-center">{pro}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  Como activar el Plan Pro
+                </h4>
+                <ol className="ml-4 list-decimal space-y-2 text-sm text-muted-foreground">
+                  <li>Ve a <strong>Dashboard → Facturacion</strong></li>
+                  <li>Haz clic en <strong>Activar Plan Pro · $9.990/mes</strong></li>
+                  <li>Seras redirigido a <strong>Transbank WebPay OneClick</strong> para inscribir tu tarjeta</li>
+                  <li>Ingresa los datos de tu tarjeta en la pagina segura de Transbank</li>
+                  <li>Al confirmar, se realiza el primer cobro de <strong>$9.990 CLP</strong> inmediatamente</li>
+                  <li>Tu plan queda en <strong>Pro</strong> y la tarjeta queda guardada para cobros mensuales automaticos</li>
+                </ol>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Ciclo de facturacion</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    El cobro se repite <strong>cada 30 dias</strong> automaticamente a tu tarjeta inscrita.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    Si un cobro falla, se reintenta automaticamente. Despues de <strong>3 intentos fallidos</strong> tu plan
+                    baja a Free y recibes una notificacion.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    Puedes ver el historial completo de cobros en <strong>Dashboard → Facturacion</strong>.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  Cancelar el Plan Pro
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Puedes cancelar en cualquier momento desde <strong>Dashboard → Facturacion → Cancelar suscripcion</strong>.
+                  La cancelacion es inmediata: tu plan baja a Free de inmediato y tu tarjeta es eliminada de Transbank.
+                  No hay reembolsos parciales por los dias no utilizados.
+                </p>
+              </div>
+            </section>
+
+            {/* Step 9: Payment Methods */}
+            <section id="payments" className="scroll-mt-24 space-y-4">
+              <SectionHeading id="" step="9" icon={Wallet} title="Metodos de pago para tu tienda" />
+              <p className="text-muted-foreground">
+                Configura como reciben los pagos <strong>tus clientes</strong> al comprar en tu tienda.
+                Esto es independiente de tu suscripcion Pro. Ve a{" "}
+                <strong>Dashboard → Configuracion → Pagos</strong>.
+              </p>
+
+              <div className="space-y-4">
+                <div className="rounded-xl border bg-card p-6 space-y-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">Transbank</span>
+                    WebPay Plus
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    El procesador de pagos estandar de Chile. Acepta tarjetas de credito y debito
+                    Redcompra, Visa, Mastercard a traves de la red WebPay.
+                  </p>
+                  <div>
+                    <h5 className="mb-2 text-sm font-medium">Modo integracion (pruebas)</h5>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      Selecciona entorno <strong>Integracion</strong>. Mercadi inyecta automaticamente
+                      las credenciales de prueba de Transbank — no necesitas ingresar nada mas.
+                      Usa estas tarjetas de prueba en el checkout:
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead><tr className="border-b"><th className="py-1.5 pr-4 text-left font-medium text-muted-foreground">Campo</th><th className="py-1.5 text-left font-medium text-muted-foreground">Valor (aprobacion)</th></tr></thead>
+                        <tbody className="font-mono text-xs text-muted-foreground">
+                          <tr className="border-b"><td className="py-1.5 pr-4">Numero de tarjeta</td><td>4051 8856 0044 6623</td></tr>
+                          <tr className="border-b"><td className="py-1.5 pr-4">CVV</td><td>123</td></tr>
+                          <tr className="border-b"><td className="py-1.5 pr-4">Expiracion</td><td>12/25</td></tr>
+                          <tr className="border-b"><td className="py-1.5 pr-4">RUT</td><td>11.111.111-1</td></tr>
+                          <tr><td className="py-1.5 pr-4">Clave</td><td>123</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">Para probar rechazo usa la tarjeta <code className="rounded bg-muted px-1 py-0.5">5186 0595 5959 0568</code> con los mismos datos.</p>
+                  </div>
+                  <div>
+                    <h5 className="mb-1 text-sm font-medium">Modo produccion</h5>
+                    <p className="text-sm text-muted-foreground">
+                      Selecciona entorno <strong>Produccion</strong> e ingresa tu
+                      <strong> Codigo de Comercio</strong> y <strong>API Key</strong>
+                      {" "}que te entrega Transbank al afiliarte. Requiere <strong>Plan Pro</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-card p-6 space-y-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">MercadoPago</span>
+                    Checkout Pro
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Acepta tarjetas, transferencias y otros medios de pago via MercadoPago.
+                    El cliente es redirigido a la pagina de MercadoPago para completar el pago,
+                    que se confirma via webhook.
+                  </p>
+                  <div>
+                    <h5 className="mb-1 text-sm font-medium">Como configurar</h5>
+                    <ol className="ml-4 list-decimal space-y-1 text-sm text-muted-foreground">
+                      <li>Crea una cuenta en <strong>mercadopago.cl</strong> y ve a Credenciales</li>
+                      <li>En modo <strong>Sandbox</strong>: usa las credenciales de prueba (Access Token + Public Key)</li>
+                      <li>En modo <strong>Produccion</strong>: usa las credenciales de produccion y agrega el Webhook Secret</li>
+                      <li>Copia la <strong>Webhook URL</strong> que aparece en la configuracion de pagos y registrala en el panel de MercadoPago</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-sm">
+                    <strong>Proveedor Mock:</strong> Para desarrollo y pruebas sin pasar por Transbank ni MercadoPago,
+                    usa el proveedor <code className="rounded bg-muted px-1.5 py-0.5 text-xs">mock</code>.
+                    Todos los pagos se aprueban instantaneamente.
+                    Viene configurado por defecto al crear tu tienda.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 10: Notifications */}
+            <section id="notifications" className="scroll-mt-24 space-y-4">
+              <SectionHeading id="" step="10" icon={Bell} title="Notificaciones por email" />
+              <p className="text-muted-foreground">
+                Mercadi envia correos automaticos en los eventos clave de tu negocio.
+                Puedes configurar cuales recibes desde{" "}
+                <strong>Dashboard → Configuracion → Notificaciones</strong>.
+              </p>
+
+              <div className="rounded-xl border bg-card p-6 space-y-4">
+                <h4 className="font-semibold">Correos automaticos</h4>
+                <div className="space-y-3 text-sm">
+                  {[
+                    {
+                      evento: "Nuevo pedido",
+                      destinatario: "Dueno + colaboradores",
+                      descripcion: "Cuando un cliente realiza una compra. Incluye el detalle de los productos y datos del comprador.",
+                    },
+                    {
+                      evento: "Pago recibido",
+                      destinatario: "Dueno de tienda",
+                      descripcion: "Confirmacion de que el pago fue procesado exitosamente, con el monto y proveedor.",
+                    },
+                    {
+                      evento: "Pedido confirmado",
+                      destinatario: "Cliente comprador",
+                      descripcion: "Recibo automatico enviado al cliente con el detalle completo de su compra.",
+                    },
+                    {
+                      evento: "Metodo de pago configurado",
+                      destinatario: "Dueno de tienda",
+                      descripcion: "Cuando guardas o activas un proveedor de pago (Transbank, MercadoPago).",
+                    },
+                    {
+                      evento: "Opciones de envio actualizadas",
+                      destinatario: "Dueno de tienda",
+                      descripcion: "Cuando modificas las opciones de envio o retiro.",
+                    },
+                    {
+                      evento: "Tienda creada",
+                      destinatario: "Dueno de tienda",
+                      descripcion: "Confirmacion al crear un nuevo negocio en la plataforma.",
+                    },
+                    {
+                      evento: "Colaborador agregado",
+                      destinatario: "El colaborador",
+                      descripcion: "Cuando un colaborador acepta tu invitacion y accede a tu tienda.",
+                    },
+                    {
+                      evento: "Colaborador removido",
+                      destinatario: "El colaborador",
+                      descripcion: "Cuando revoces el acceso de un colaborador.",
+                    },
+                  ].map((row) => (
+                    <div key={row.evento} className="flex flex-col gap-0.5 rounded-lg border p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium">{row.evento}</span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{row.destinatario}</span>
+                      </div>
+                      <p className="text-muted-foreground">{row.descripcion}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-card p-6 space-y-3">
+                <h4 className="font-semibold">Como configurar tus preferencias</h4>
+                <p className="text-sm text-muted-foreground">
+                  Cada miembro del equipo puede configurar individualmente que correos recibe:
+                </p>
+                <ol className="ml-4 list-decimal space-y-1 text-sm text-muted-foreground">
+                  <li>Ve a <strong>Dashboard → Configuracion → Notificaciones</strong></li>
+                  <li>Activa o desactiva cada tipo de notificacion con el toggle</li>
+                  <li>Los cambios se guardan automaticamente</li>
+                </ol>
+                <p className="text-sm text-muted-foreground">
+                  Los colaboradores solo ven la opcion de <strong>Nuevo pedido</strong>.
+                  El dueno ve todas las notificaciones del negocio.
+                </p>
+              </div>
+            </section>
+
+            {/* Step 11: UCP Settings */}
             <section id="ucp-settings" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="8"
+                step="11"
                 icon={Settings}
                 title="Configurar UCP"
               />
@@ -1172,7 +1432,7 @@ export default function DocsPage() {
             <section id="gemini-setup" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 id=""
-                step="9"
+                step="12"
                 icon={Bot}
                 title="Configurar Gemini"
               />
