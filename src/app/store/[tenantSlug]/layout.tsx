@@ -67,6 +67,7 @@ export default async function StoreLayout({
         <link rel="stylesheet" href={googleFontsHref} />
       )}
       <div
+        className="flex min-h-screen flex-col"
         style={
           {
             "--store-primary": primary,
@@ -91,7 +92,7 @@ export default async function StoreLayout({
             tenantSlug={tenant.slug}
             logoUrl={theme.logoUrl || undefined}
           />
-          <main className="mx-auto min-h-[60vh] max-w-7xl px-4 py-8 sm:px-6">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
             {children}
           </main>
           <StoreFooter businessName={tenant.name} showBranding={showBranding} />

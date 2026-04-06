@@ -13,22 +13,24 @@ export function StoreFooter({ businessName, showBranding }: StoreFooterProps) {
         borderColor: "var(--store-muted, #e5e7eb)33",
       }}
     >
-      {showBranding ? (
-        <p>
-          Powered by{" "}
-          <a
-            href="https://mercadi.cl"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium"
-            style={{ color: "var(--store-primary)" }}
-          >
-            Mercadi.cl
-          </a>
-        </p>
-      ) : (
-        <p>&copy; {businessName}</p>
-      )}
+      <p>
+        {showBranding && (
+          <>
+            Tienda creada con{" "}
+            <a
+              href="https://mercadi.cl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline-offset-2 hover:underline"
+              style={{ color: "var(--store-primary)" }}
+            >
+              Mercadi.cl
+            </a>
+            {" · "}
+          </>
+        )}
+        &copy; {new Date().getFullYear()} {businessName}
+      </p>
     </footer>
   );
 }
