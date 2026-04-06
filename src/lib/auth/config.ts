@@ -53,20 +53,23 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       if (user) {
+        // Fresh login — seed token from authorize() result
         token.role = user.role;
         token.plan = user.plan || "free";
         token.tenantId = user.tenantId;
+        return token;
       }
-      // Refresh tenantId from DB on update trigger or if tenantId is missing
-      if (trigger === "update" || (!token.tenantId && token.sub)) {
+      // On every subsequent request re-read role/plan/tenantId from DB so
+      // manual role changes (e.g. promoting to admin) take effect immediately.
+      if (token.sub) {
         await connectDB();
-        const dbUser = await User.findById(token.sub).lean();
+        const dbUser = await User.findById(token.sub).select("role plan tenantId").lean();
         if (dbUser) {
-          token.tenantId = dbUser.tenantId?.toString();
           token.role = dbUser.role;
-          token.plan = dbUser.plan || "free";
+          token.plan = (dbUser.plan as string) || "free";
+          token.tenantId = dbUser.tenantId?.toString();
         }
       }
       return token;
