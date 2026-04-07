@@ -26,7 +26,13 @@ export async function requireAuth(): Promise<AuthSession> {
 
 export async function requireAdmin(): Promise<AuthSession> {
   const session = await requireAuth();
-  if (session.user.role !== "admin") {
+  const isAdmin = session.user.role === "admin";
+  const allowed = (process.env.SUPER_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isSuperAdminEmail = allowed.includes((session.user.email ?? "").toLowerCase());
+  if (!isAdmin && !isSuperAdminEmail) {
     if (session.user.tenantId) redirect("/dashboard");
     redirect("/onboarding");
   }
