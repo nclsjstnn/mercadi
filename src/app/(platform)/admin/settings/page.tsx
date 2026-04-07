@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth/guards";
 import { connectDB } from "@/lib/db/connect";
 import { User, DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/db/models/user";
+import { getPlatformSettings } from "@/lib/db/models/platform-settings";
 import { PageHeader } from "@/components/platform/page-header";
 import {
   Card,
@@ -9,19 +10,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bell, Globe, CreditCard, Receipt } from "lucide-react";
+import { Bell, Globe, CreditCard, Receipt, FileText } from "lucide-react";
 import { NotificationPreferencesPanel } from "@/components/settings/notification-preferences-panel";
+import { ReceiptSettingsPanel } from "@/components/settings/receipt-settings-panel";
 
 export default async function AdminSettingsPage() {
   const session = await requireAdmin();
   await connectDB();
 
-  const dbUser = await User.findById(session.user.id)
-    .select("notificationPreferences")
-    .lean();
+  const [dbUser, platformSettings] = await Promise.all([
+    User.findById(session.user.id).select("notificationPreferences").lean(),
+    getPlatformSettings(),
+  ]);
+
   const userPrefs = {
     ...DEFAULT_NOTIFICATION_PREFERENCES,
     ...(dbUser?.notificationPreferences ?? {}),
+  };
+
+  const receiptSettings = {
+    activeProvider: platformSettings.receipt?.activeProvider ?? "mock",
+    enabled: platformSettings.receipt?.enabled ?? false,
+    providerConfig: {
+      apiKey:
+        (platformSettings.receipt?.providerConfig?.apiKey as string) ?? "",
+    },
   };
 
   return (
@@ -78,6 +91,23 @@ export default async function AdminSettingsPage() {
             <SettingRow label="Mock" value="Habilitado" />
             <SettingRow label="Transbank" value="Pendiente" />
             <SettingRow label="MercadoPago" value="Pendiente" />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FileText className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Facturación Electrónica</CardTitle>
+              <CardDescription>
+                Proveedor de boletas/facturas para todos los negocios de la plataforma
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ReceiptSettingsPanel initial={receiptSettings} />
           </CardContent>
         </Card>
 

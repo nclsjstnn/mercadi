@@ -71,6 +71,14 @@ export interface ITenantWhatsApp {
   verifyToken: string;
 }
 
+export interface ITenantReceiptConfig {
+  /** Override platform-level provider for this tenant. Empty string = use platform default. */
+  provider: string;
+  enabled: boolean;
+  /** Provider-specific credentials (SII rut, password, clave_certificado, rut_empresa, apiKey) */
+  providerConfig: Record<string, unknown>;
+}
+
 export interface ITenant extends Document {
   name: string;
   slug: string;
@@ -100,6 +108,7 @@ export interface ITenant extends Document {
   collaborators: mongoose.Types.ObjectId[];
   locale: ITenantLocale;
   whatsapp: ITenantWhatsApp;
+  receipt: ITenantReceiptConfig;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -197,6 +206,11 @@ const TenantSchema = new Schema<ITenant>(
       phoneNumberId: { type: String, default: "" },
       accessToken: { type: String, default: "" },
       verifyToken: { type: String, default: "" },
+    },
+    receipt: {
+      provider: { type: String, default: "" },
+      enabled: { type: Boolean, default: false },
+      providerConfig: { type: Schema.Types.Mixed, default: {} },
     },
   },
   { timestamps: true }
