@@ -107,7 +107,7 @@ export function AppSidebar({
   plan = "free",
 }: AppSidebarProps) {
   const pathname = usePathname();
-  const isAdmin = user.role === "admin";
+  const isAdmin = user.role === "admin" || pathname.startsWith("/admin");
   const initials = (user.name || user.email || "U")
     .split(" ")
     .map((s) => s[0])
@@ -130,7 +130,7 @@ export function AppSidebar({
         <Link href="/" className="flex items-center">
           <Image src="/mercadi.png" alt="Mercadi" width={130} height={34} priority />
         </Link>
-        {!isAdmin && tenants.length > 0 && (
+        {!isAdmin && !pathname.startsWith("/admin") && tenants.length > 0 && (
           <div className="mt-3">
             <TenantSwitcher
               tenants={tenants}
