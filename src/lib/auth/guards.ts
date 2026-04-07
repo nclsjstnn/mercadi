@@ -35,11 +35,14 @@ export async function requireAdmin(): Promise<AuthSession> {
 
 export async function requireSuperAdmin(): Promise<AuthSession> {
   const session = await requireAuth();
+  // Accept users with role "admin" OR whose email is in SUPER_ADMIN_EMAILS
+  const isAdmin = session.user.role === "admin";
   const allowed = (process.env.SUPER_ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
-  if (!allowed.includes((session.user.email ?? "").toLowerCase())) {
+  const isSuperAdminEmail = allowed.includes((session.user.email ?? "").toLowerCase());
+  if (!isAdmin && !isSuperAdminEmail) {
     if (session.user.tenantId) redirect("/dashboard");
     redirect("/login");
   }
