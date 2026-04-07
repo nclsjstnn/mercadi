@@ -85,6 +85,9 @@ export function WaitlistTable({
         return;
       }
       const data = await res.json();
+      if (action === "approve" && data.emailError) {
+        alert(`Aprobado, pero falló el envío de email: ${data.emailError}\nUsa "Reenviar" para intentar de nuevo.`);
+      }
       setEntries((prev) =>
         prev.map((e) => {
           if (e._id !== id) return e;

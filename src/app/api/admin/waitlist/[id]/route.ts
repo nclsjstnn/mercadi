@@ -36,14 +36,15 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       if (adminNotes) entry.adminNotes = adminNotes;
       await entry.save();
 
+      let emailError: string | null = null;
       try {
         await sendInviteEmail({ to: entry.email, name: entry.name, inviteUrl });
-      } catch (emailError) {
-        console.error("[waitlist] Email send failed:", emailError);
-        // Don't fail the request — entry is already approved, admin can resend
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : String(err);
+        console.error("[waitlist] Email send failed:", err);
       }
 
-      return NextResponse.json({ success: true, inviteUrl });
+      return NextResponse.json({ success: true, inviteUrl, emailError });
     }
 
     if (action === "reject") {
