@@ -1,6 +1,7 @@
 "use server";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { requireTenant } from "@/lib/auth/guards";
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
@@ -51,13 +52,42 @@ Reglas de diseño:
 - Para negocios modernos/tech: usa sans-serif
 - headingFont y bodyFont pueden ser distintos (complementarios) o el mismo`;
 
+async function generateWithGemini(tenantName: string, prompt: string): Promise<GeneratedTheme> {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: { responseMimeType: "application/json" },
+    systemInstruction: SYSTEM_PROMPT,
+  });
+  const result = await model.generateContent(
+    `Nombre del negocio: "${tenantName}"\nDescripción: "${prompt}"`
+  );
+  return JSON.parse(result.response.text()) as GeneratedTheme;
+}
+
+async function generateWithOpenAI(tenantName: string, prompt: string): Promise<GeneratedTheme> {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `Nombre del negocio: "${tenantName}"\nDescripción: "${prompt}"`,
+      },
+    ],
+  });
+  return JSON.parse(completion.choices[0].message.content ?? "{}") as GeneratedTheme;
+}
+
 export async function generateStoreTheme(
   prompt: string
 ): Promise<{ ok: true; theme: GeneratedTheme } | { ok: false; error: string }> {
   const session = await requireTenant();
 
-  if (!process.env.GEMINI_API_KEY) {
-    return { ok: false, error: "GEMINI_API_KEY no configurado en el servidor" };
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY) {
+    return { ok: false, error: "No hay proveedor IA disponible (configura GEMINI_API_KEY u OPENAI_API_KEY)" };
   }
 
   if (!prompt.trim()) {
@@ -69,19 +99,19 @@ export async function generateStoreTheme(
     const tenant = await Tenant.findById(session.user.tenantId).select("name").lean();
     const tenantName = tenant?.name ?? "Mi tienda";
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: { responseMimeType: "application/json" },
-      systemInstruction: SYSTEM_PROMPT,
-    });
+    let theme: GeneratedTheme;
 
-    const result = await model.generateContent(
-      `Nombre del negocio: "${tenantName}"\nDescripción: "${prompt.trim()}"`
-    );
-
-    const raw = result.response.text();
-    const theme = JSON.parse(raw) as GeneratedTheme;
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        theme = await generateWithGemini(tenantName, prompt.trim());
+      } catch (geminiErr) {
+        console.warn("[store-theme] Gemini failed, falling back to OpenAI:", geminiErr);
+        if (!process.env.OPENAI_API_KEY) throw geminiErr;
+        theme = await generateWithOpenAI(tenantName, prompt.trim());
+      }
+    } else {
+      theme = await generateWithOpenAI(tenantName, prompt.trim());
+    }
 
     // Validate required fields and basic hex format
     const colorFields = ["primaryColor", "secondaryColor", "accentColor", "backgroundColor", "surfaceColor", "textColor", "mutedColor"] as const;

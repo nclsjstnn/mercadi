@@ -32,7 +32,7 @@ export default function ChatWidget({ tenantSlug }: { tenantSlug: string }) {
             Probar tu Catalogo
           </SheetTitle>
           <SheetDescription>
-            Chatea con Gemini para probar tu catalogo UCP
+            Chatea con IA para probar tu catalogo UCP
           </SheetDescription>
         </SheetHeader>
         <GeminiChat tenantSlug={tenantSlug} className="h-full min-h-0" />
