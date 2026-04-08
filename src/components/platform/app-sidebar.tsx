@@ -85,6 +85,7 @@ interface TenantInfo {
   name: string;
   slug: string;
   isOwner: boolean;
+  status?: string;
 }
 
 interface AppSidebarProps {

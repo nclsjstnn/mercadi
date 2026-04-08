@@ -1,12 +1,14 @@
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
 import { User, DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/db/models/user";
+import { Subscription } from "@/lib/db/models/subscription";
 import { CollaborationInvite } from "@/lib/db/models/collaboration-invite";
 import { requireTenant } from "@/lib/auth/guards";
 import { PLAN_LIMITS, type PlanType } from "@/lib/config/plans";
 import { PageHeader } from "@/components/platform/page-header";
 import { CollaboratorsPanel } from "@/components/settings/collaborators-panel";
 import { NotificationPreferencesPanel } from "@/components/settings/notification-preferences-panel";
+import { PlanPanel } from "@/components/settings/plan-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -15,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bell, Building2, CreditCard, Receipt, Truck, Users } from "lucide-react";
+import { Bell, Building2, CreditCard, Sparkles, Truck, Users } from "lucide-react";
 import ShippingOptionsForm from "@/components/settings/shipping-options-form";
 import { PaymentProvidersPanel } from "@/components/settings/payment-providers-panel";
 
@@ -28,10 +30,22 @@ export default async function TenantSettingsPage() {
 
   const isOwner = tenant.ownerId.toString() === session.user.id;
 
-  // Current user preferences
-  const dbUserForPrefs = await User.findById(session.user.id)
-    .select("plan notificationPreferences")
-    .lean();
+  // Fetch user + subscription + owned tenants in parallel
+  const [dbUserForPrefs, subscription, ownedTenants] = await Promise.all([
+    User.findById(session.user.id).select("plan notificationPreferences").lean(),
+    Subscription.findOne({
+      userId: session.user.id,
+      status: { $in: ["active", "past_due", "enrolling"] },
+    })
+      .select("status nextBillingDate cardType cardLast4 amount")
+      .lean(),
+    Tenant.find({ ownerId: session.user.id })
+      .select("_id name status")
+      .lean(),
+  ]);
+
+  const currentPlan = ((dbUserForPrefs?.plan as string) || "free") as PlanType;
+
   const userPrefs = {
     ...DEFAULT_NOTIFICATION_PREFERENCES,
     ...(dbUserForPrefs?.notificationPreferences ?? {}),
@@ -44,10 +58,8 @@ export default async function TenantSettingsPage() {
   let maxCollaborators = 0;
 
   if (isOwner) {
-    const dbUser = dbUserForPrefs;
-    const plan = ((dbUser?.plan as string) || "free") as PlanType;
-    isPro = plan === "pro";
-    maxCollaborators = PLAN_LIMITS[plan].maxCollaboratorsPerTenant;
+    isPro = currentPlan === "pro";
+    maxCollaborators = PLAN_LIMITS[currentPlan].maxCollaboratorsPerTenant;
 
     if (tenant.collaborators?.length) {
       const collabUsers = await User.find({
@@ -99,10 +111,12 @@ export default async function TenantSettingsPage() {
             <CreditCard className="h-4 w-4" />
             Pagos
           </TabsTrigger>
-          <TabsTrigger value="commission" className="gap-2">
-            <Receipt className="h-4 w-4" />
-            Comision
-          </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger value="plan" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              Plan
+            </TabsTrigger>
+          )}
           <TabsTrigger value="shipping" className="gap-2">
             <Truck className="h-4 w-4" />
             Envio
@@ -194,26 +208,40 @@ export default async function TenantSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="commission">
-          <Card>
-            <CardHeader>
-              <CardTitle>Comision</CardTitle>
-              <CardDescription>
-                Tasa de comision aplicada a tus ventas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg bg-muted p-4 text-center">
-                <p className="text-3xl font-bold">
-                  {(tenant.commissionRate * 100).toFixed(1)}%
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  por transaccion completada
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {isOwner && (
+          <TabsContent value="plan">
+            <Card>
+              <CardHeader>
+                <CardTitle>Plan y Suscripción</CardTitle>
+                <CardDescription>
+                  Tu plan actual, características incluidas y facturación
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PlanPanel
+                  currentPlan={currentPlan}
+                  subscription={
+                    subscription
+                      ? {
+                          status: subscription.status,
+                          nextBillingDate: subscription.nextBillingDate?.toISOString(),
+                          cardType: subscription.cardType,
+                          cardLast4: subscription.cardLast4,
+                          amount: subscription.amount,
+                        }
+                      : null
+                  }
+                  ownedTenants={ownedTenants.map((t) => ({
+                    _id: t._id.toString(),
+                    name: t.name,
+                    status: t.status,
+                  }))}
+                  commissionRate={tenant.commissionRate}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
         <TabsContent value="shipping">
           <Card>
             <CardHeader>

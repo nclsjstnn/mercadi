@@ -11,13 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Check, ChevronsUpDown, Plus, Sparkles, Building2, Users } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Sparkles, Building2, Users, Lock } from "lucide-react";
 
 interface TenantInfo {
   _id: string;
   name: string;
   slug: string;
   isOwner: boolean;
+  status?: string;
 }
 
 interface TenantSwitcherProps {
@@ -81,25 +82,34 @@ export function TenantSwitcher({
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        {tenants.map((tenant) => (
-          <DropdownMenuItem
-            key={tenant._id}
-            onClick={() => handleSwitch(tenant._id)}
-          >
-            <Check
-              className={`mr-2 h-4 w-4 ${
-                tenant._id === activeTenantId ? "opacity-100" : "opacity-0"
-              }`}
-            />
-            <span className="flex-1 truncate">{tenant.name}</span>
-            {!tenant.isOwner && (
-              <span className="ml-2 flex items-center gap-1 text-xs text-muted-foreground">
-                <Users className="h-3 w-3" />
-                Colaborador
-              </span>
-            )}
-          </DropdownMenuItem>
-        ))}
+        {tenants.map((tenant) => {
+          const isInactive = tenant.status === "inactive";
+          return (
+            <DropdownMenuItem
+              key={tenant._id}
+              onClick={() => !isInactive && handleSwitch(tenant._id)}
+              className={isInactive ? "opacity-60 cursor-default" : undefined}
+            >
+              <Check
+                className={`mr-2 h-4 w-4 shrink-0 ${
+                  tenant._id === activeTenantId ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <span className="flex-1 truncate">{tenant.name}</span>
+              {isInactive ? (
+                <span className="ml-2 flex items-center gap-1 text-xs text-muted-foreground">
+                  <Lock className="h-3 w-3" />
+                  Inactivo
+                </span>
+              ) : !tenant.isOwner ? (
+                <span className="ml-2 flex items-center gap-1 text-xs text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  Colaborador
+                </span>
+              ) : null}
+            </DropdownMenuItem>
+          );
+        })}
         {canCreateMore && (
           <>
             <DropdownMenuSeparator />

@@ -8,6 +8,8 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/platform/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import Providers from "@/components/providers";
+import { Lock } from "lucide-react";
+import Link from "next/link";
 
 export default async function PlatformLayout({
   children,
@@ -17,7 +19,7 @@ export default async function PlatformLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  let tenants: { _id: string; name: string; slug: string; isOwner: boolean }[] = [];
+  let tenants: { _id: string; name: string; slug: string; isOwner: boolean; status: string }[] = [];
   let canCreateMore = false;
   let plan: PlanType = "free";
 
@@ -28,17 +30,21 @@ export default async function PlatformLayout({
     const rawTenants = await Tenant.find({
       $or: [{ ownerId: session.user.id }, { collaborators: session.user.id }],
     })
-      .select("_id name slug ownerId")
+      .select("_id name slug ownerId status")
       .lean();
     tenants = rawTenants.map((t) => ({
       _id: t._id.toString(),
       name: t.name,
       slug: t.slug,
       isOwner: t.ownerId.toString() === session.user!.id,
+      status: t.status ?? "active",
     }));
     const ownedCount = tenants.filter((t) => t.isOwner).length;
     canCreateMore = ownedCount < PLAN_LIMITS[plan].maxTenants;
   }
+
+  const activeTenantStatus =
+    tenants.find((t) => t._id === session.user?.tenantId)?.status ?? "active";
 
   return (
     <Providers>
@@ -58,6 +64,21 @@ export default async function PlatformLayout({
             Mercadi.cl
           </span>
         </header>
+        {activeTenantStatus === "inactive" && (
+          <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-sm text-amber-800">
+            <Lock className="h-4 w-4 shrink-0" />
+            <span>
+              Este negocio está deshabilitado por límite de plan.{" "}
+              <Link
+                href="/dashboard/settings?tab=plan"
+                className="font-semibold underline underline-offset-2"
+              >
+                Activa tu plan Pro
+              </Link>{" "}
+              para volver a operar.
+            </span>
+          </div>
+        )}
         <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
