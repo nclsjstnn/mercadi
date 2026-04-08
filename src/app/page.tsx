@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/landing/mobile-nav";
+import { RotatingBrand } from "@/components/landing/rotating-brand";
 import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { auth } from "@/lib/auth";
 import { isInvitationsEnabled } from "@/lib/invitations";
@@ -109,9 +110,10 @@ export default async function HomePage() {
               Compatible con agentes de IA — Gemini, ChatGPT y mas
             </div>
             <h1 className="mt-6 text-4xl font-bold leading-tight text-black sm:text-5xl lg:text-[3.75rem]">
-              Vende por WhatsApp, Gemini
+              Tu catálogo en{" "}
+              <RotatingBrand />
               <br />
-              <span className="text-amber-500">y ChatGPT. Sin codigo.</span>
+              <span className="text-gray-700">Sin codigo.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 leading-relaxed">
               Sube tu catalogo una vez. Mercadi lo publica en WhatsApp, Google
