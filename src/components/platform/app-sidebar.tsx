@@ -53,13 +53,13 @@ import type { LucideIcon } from "lucide-react";
 const tenantMainNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/products", label: "Productos", icon: Package },
-  { href: "/dashboard/store", label: "Tienda", icon: Store },
   { href: "/dashboard/coupons", label: "Cupones", icon: Ticket },
   { href: "/dashboard/orders", label: "Pedidos", icon: ShoppingCart },
   { href: "/dashboard/payments", label: "Pagos", icon: CreditCard },
 ];
 
 const tenantChannelNav = [
+  { href: "/dashboard/store", label: "Tienda", icon: Store },
   { href: "/dashboard/channels/ucp", label: "UCP / Gemini", icon: Globe },
   { href: "/dashboard/channels/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/dashboard/channels/acp", label: "ChatGPT / ACP", icon: Bot },
