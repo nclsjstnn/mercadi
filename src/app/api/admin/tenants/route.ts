@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
+import { User } from "@/lib/db/models/user";
 import { requireAdmin } from "@/lib/auth/guards";
 
 export async function GET() {
@@ -10,9 +11,20 @@ export async function GET() {
     await connectDB();
 
     const tenants = await Tenant.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ tenants });
+
+    const ownerIds = tenants.map((t) => t.ownerId).filter(Boolean);
+    const owners = await User.find({ _id: { $in: ownerIds } }).select("plan").lean();
+    const planMap = Object.fromEntries(owners.map((u) => [u._id.toString(), u.plan ?? "free"]));
+
+    const enriched = tenants.map((t) => ({
+      ...t,
+      ownerPlan: planMap[t.ownerId?.toString() ?? ""] ?? "free",
+    }));
+
+    return NextResponse.json({ tenants: enriched });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error";
+    console.error("[GET /api/admin/tenants]", message);
     return NextResponse.json(
       { error: message },
       { status: message.includes("Unauthorized") ? 401 : 500 }

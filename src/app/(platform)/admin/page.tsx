@@ -36,7 +36,7 @@ export default async function SuperAdminPage() {
     await Promise.all([
       Tenant.find()
         .sort({ createdAt: -1 })
-        .select("name slug rut status commissionRate ucpEnabled acpEnabled store payment shipping")
+        .select("name slug rut status commissionRate ucpEnabled acpEnabled store payment shipping ownerId")
         .lean(),
       Order.find()
         .sort({ createdAt: -1 })
@@ -82,6 +82,10 @@ export default async function SuperAdminPage() {
   const tenantMap = Object.fromEntries(tenants.map((t) => [t._id.toString(), t.name]));
   const revenue = revenueAgg[0] ?? { total: 0, commission: 0 };
 
+  const ownerIdToPlan = Object.fromEntries(
+    users.map((u) => [u._id.toString(), u.plan ?? "free"])
+  );
+
   const adminTenants: AdminTenant[] = tenants.map((t) => ({
     _id: t._id.toString(),
     name: t.name,
@@ -91,6 +95,7 @@ export default async function SuperAdminPage() {
     commissionRate: t.commissionRate,
     ucpEnabled: t.ucpEnabled,
     acpEnabled: t.acpEnabled ?? false,
+    plan: ownerIdToPlan[t.ownerId?.toString() ?? ""] ?? "free",
     store: { enabled: t.store?.enabled ?? false },
     payment: {
       provider: t.payment?.provider ?? "mock",

@@ -56,7 +56,27 @@ export async function POST(request: NextRequest) {
       : (tbkEntry.providerConfig as Record<string, unknown>);
 
   const provider = new TransbankProvider();
-  const captureResult = await provider.capture(token, tbkConfig);
+
+  let captureResult: Awaited<ReturnType<typeof provider.capture>>;
+  try {
+    captureResult = await provider.capture(token, tbkConfig);
+  } catch (err) {
+    console.error("[tbk-return] capture() threw:", err);
+    return failureRedirect(sessionId);
+  }
+
+  const commitResponse = captureResult.providerResponse as unknown as TbkCommitResponse;
+  console.info("[tbk-return] commit result:", {
+    sessionId,
+    tenantId,
+    success: captureResult.success,
+    responseCode: commitResponse?.responseCode,
+    status: commitResponse?.status,
+    paymentTypeCode: commitResponse?.paymentTypeCode,
+    amount: commitResponse?.amount,
+    authorizationCode: commitResponse?.authorizationCode,
+    environment: tbkConfig.environment,
+  });
 
   // Update PaymentTransaction status
   await PaymentTransaction.findOneAndUpdate(
@@ -68,7 +88,6 @@ export async function POST(request: NextRequest) {
   );
 
   if (captureResult.success) {
-    const commitResponse = captureResult.providerResponse as unknown as TbkCommitResponse;
     const orderId = commitResponse.buyOrder;
 
     try {
@@ -85,6 +104,12 @@ export async function POST(request: NextRequest) {
       )
     );
   }
+
+  console.warn("[tbk-return] payment rejected by TBK:", {
+    sessionId,
+    responseCode: commitResponse?.responseCode,
+    status: commitResponse?.status,
+  });
 
   return NextResponse.redirect(
     new URL(

@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, Settings2 } from "lucide-react";
+import { ChevronDown, Settings2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { PaymentConfigSheet } from "./payment-config-sheet";
 import {
   setTenantStatus,
@@ -38,10 +39,18 @@ export interface AdminTenant {
   commissionRate: number;
   ucpEnabled: boolean;
   acpEnabled: boolean;
+  plan?: string;
   store: { enabled: boolean };
   payment: { provider: string; providerConfig: Record<string, string> };
   shipping: { options: { id: string; name: string; enabled: boolean }[] };
 }
+
+const PLAN_LABELS: Record<string, { label: string; cls: string }> = {
+  free:    { label: "Free",    cls: "bg-gray-100 text-gray-600" },
+  starter: { label: "Starter", cls: "bg-blue-100 text-blue-700" },
+  pro:     { label: "Pro",     cls: "bg-purple-100 text-purple-700" },
+  enterprise: { label: "Enterprise", cls: "bg-amber-100 text-amber-700" },
+};
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-700",
@@ -117,6 +126,7 @@ export function TenantsTable({ tenants: initial }: { tenants: AdminTenant[] }) {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[180px]">Negocio</TableHead>
+              <TableHead>Plan</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Tienda</TableHead>
               <TableHead>UCP</TableHead>
@@ -133,8 +143,29 @@ export function TenantsTable({ tenants: initial }: { tenants: AdminTenant[] }) {
                   <TableCell>
                     <div>
                       <p className="font-medium text-sm">{t.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{t.slug}</p>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground font-mono">{t.slug}</span>
+                        <Link
+                          href={`/store/${t.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                          title="Ver tienda"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const p = PLAN_LABELS[t.plan ?? "free"] ?? PLAN_LABELS.free;
+                      return (
+                        <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${p.cls}`}>
+                          {p.label}
+                        </span>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <Select
@@ -212,7 +243,7 @@ export function TenantsTable({ tenants: initial }: { tenants: AdminTenant[] }) {
                 </TableRow>
                 {t.shipping.options.length > 0 && expanded.has(t._id) && (
                   <TableRow key={`${t._id}-shipping`} className="bg-muted/20 hover:bg-muted/20">
-                    <TableCell colSpan={8} className="py-3 pl-8">
+                    <TableCell colSpan={9} className="py-3 pl-8">
                       <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Opciones de envío
                       </p>
