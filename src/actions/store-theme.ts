@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import { requireTenant } from "@/lib/auth/guards";
 import { connectDB } from "@/lib/db/connect";
 import { Tenant } from "@/lib/db/models/tenant";
+import { revalidatePath } from "next/cache";
 
 export interface GeneratedTheme {
   primaryColor: string;
@@ -142,6 +143,7 @@ export async function generateStoreTheme(
       },
     });
 
+    revalidatePath("/dashboard/store");
     return { ok: true, theme };
   } catch (err) {
     console.error("generateStoreTheme error:", err);

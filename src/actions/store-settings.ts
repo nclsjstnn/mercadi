@@ -22,8 +22,14 @@ export async function updateStoreSettings(formData: FormData) {
   });
 
   await Tenant.findByIdAndUpdate(session.user.tenantId, {
-    "store.enabled": enabled,
-    "store.theme": theme,
+    $set: {
+      "store.enabled": enabled,
+      "store.theme.primaryColor": theme.primaryColor,
+      "store.theme.secondaryColor": theme.secondaryColor,
+      "store.theme.accentColor": theme.accentColor,
+      "store.theme.logoUrl": theme.logoUrl,
+      "store.theme.faviconUrl": theme.faviconUrl,
+    },
   });
 
   revalidatePath("/dashboard/store");

@@ -11,7 +11,7 @@ interface StatCardProps {
 export function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
   return (
     <Card>
-      <CardContent className="px-4 py-3">
+      <CardContent className="px-4 py-0 sm:py-3">
         <div className="flex items-center gap-3">
           {Icon && (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

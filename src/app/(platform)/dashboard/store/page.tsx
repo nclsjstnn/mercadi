@@ -31,8 +31,8 @@ export default async function StoreSettingsPage() {
   const isLocalhost = hostWithoutPort === "localhost";
   const protocol = isLocalhost ? "http" : "https";
   const storeUrl = isLocalhost
-    ? `${tenant.slug}.localhost:3000`
-    : `${tenant.slug}.${host}`;
+    ? `localhost:3000/store/${tenant.slug}`
+    : `${host}/store/${tenant.slug}`;
 
   const store = tenant.store || {
     enabled: false,

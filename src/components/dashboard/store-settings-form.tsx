@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,12 @@ export function StoreSettingsForm({
   const [enabled, setEnabled] = useState(initialEnabled);
   const [theme, setTheme] = useState(initialTheme);
   const [saving, setSaving] = useState(false);
+
+  // Sync when server re-renders with AI-generated colors after router.refresh()
+  useEffect(() => {
+    setTheme(initialTheme);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTheme.primaryColor, initialTheme.secondaryColor, initialTheme.accentColor, initialTheme.logoUrl, initialTheme.faviconUrl]);
 
   async function handleSave() {
     setSaving(true);

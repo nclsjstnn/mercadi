@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sparkles, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateStoreTheme, resetStoreTheme, type GeneratedTheme } from "@/actions/store-theme";
@@ -153,6 +154,7 @@ export function ThemeGeneratorPanel({
   initialPrompt,
   initialTheme,
 }: ThemeGeneratorPanelProps) {
+  const router = useRouter();
   const [prompt, setPrompt] = useState(initialPrompt);
   const [theme, setTheme] = useState<GeneratedTheme | null>(initialTheme);
   const [error, setError] = useState("");
@@ -169,6 +171,7 @@ export function ThemeGeneratorPanel({
         setTheme(result.theme);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+        router.refresh();
       } else {
         setError(result.error);
       }
@@ -180,6 +183,7 @@ export function ThemeGeneratorPanel({
       await resetStoreTheme();
       setTheme(null);
       setPrompt("");
+      router.refresh();
     });
   }
 

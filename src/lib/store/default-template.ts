@@ -62,6 +62,45 @@ export const DEFAULT_STORE_TEMPLATE = `<!DOCTYPE html>
       transition: color 0.15s;
     }
     .store-header nav a:hover { color: var(--store-primary); }
+    .store-hero {
+      background: linear-gradient(135deg, var(--store-primary) 0%, var(--store-secondary) 100%);
+      color: white;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+    .store-hero .hero-logo {
+      height: 72px;
+      width: auto;
+      max-width: 200px;
+      margin: 0 auto 1.5rem;
+      display: block;
+      filter: brightness(0) invert(1);
+      object-fit: contain;
+    }
+    .store-hero h1 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+    .store-hero p {
+      font-size: 1.125rem;
+      opacity: 0.85;
+      max-width: 480px;
+      margin: 0 auto 2rem;
+    }
+    .store-hero .hero-cta {
+      display: inline-block;
+      background: var(--store-accent);
+      color: #1a1a1a;
+      padding: 0.75rem 2.25rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .store-hero .hero-cta:hover { opacity: 0.9; transform: translateY(-1px); }
     .store-main {
       flex: 1;
       max-width: 1200px;
@@ -97,7 +136,16 @@ export const DEFAULT_STORE_TEMPLATE = `<!DOCTYPE html>
     </nav>
   </header>
 
-  <main class="store-main">
+  <section class="store-hero">
+    {% if theme.logoUrl != "" %}
+    <img src="{{ theme.logoUrl }}" alt="{{ business_name }}" class="hero-logo">
+    {% endif %}
+    <h1>{{ business_name }}</h1>
+    <p>Explora nuestro catálogo y encuentra lo que necesitas</p>
+    <a href="#productos" class="hero-cta">Ver productos</a>
+  </section>
+
+  <main class="store-main" id="productos">
     {{ content }}
   </main>
 
