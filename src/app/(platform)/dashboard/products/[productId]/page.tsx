@@ -55,6 +55,8 @@ export default async function EditProductPage({
               status: product.status,
             }}
             submitLabel="Guardar Cambios"
+            productId={productId}
+            initialImages={product.images ?? []}
           />
         </CardContent>
       </Card>

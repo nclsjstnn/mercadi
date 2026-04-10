@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db/connect";
 import { Product } from "@/lib/db/models/product";
 import { requireTenant } from "@/lib/auth/guards";
 import { revalidatePath } from "next/cache";
+import { del } from "@vercel/blob";
+import { isVercelBlobUrl } from "@/lib/validators/upload";
 
 export async function createProduct(formData: FormData) {
   const session = await requireTenant();
@@ -75,10 +77,46 @@ export async function deleteProduct(productId: string) {
   const session = await requireTenant();
   await connectDB();
 
-  await Product.findOneAndDelete({
+  const product = await Product.findOneAndDelete({
     _id: productId,
     tenantId: session.user!.tenantId,
-  });
+  }).select("images");
 
+  if (product?.images?.length) {
+    const blobUrls = product.images.filter(isVercelBlobUrl);
+    if (blobUrls.length) await del(blobUrls);
+  }
+
+  revalidatePath("/dashboard/products");
+}
+
+export async function addProductImage(productId: string, url: string) {
+  const session = await requireTenant();
+  await connectDB();
+
+  await Product.findOneAndUpdate(
+    { _id: productId, tenantId: session.user!.tenantId },
+    { $push: { images: url } }
+  );
+
+  revalidatePath("/dashboard/products");
+}
+
+export async function deleteProductImage(productId: string, url: string) {
+  const session = await requireTenant();
+  await connectDB();
+
+  const product = await Product.findOne({
+    _id: productId,
+    tenantId: session.user!.tenantId,
+  }).select("images");
+
+  if (!product || !product.images.includes(url)) return;
+
+  if (isVercelBlobUrl(url)) {
+    await del(url);
+  }
+
+  await Product.findByIdAndUpdate(productId, { $pull: { images: url } });
   revalidatePath("/dashboard/products");
 }

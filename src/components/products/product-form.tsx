@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ProductImageUploader } from "@/components/products/product-image-uploader";
 
 interface ProductFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -31,12 +32,16 @@ interface ProductFormProps {
     status?: string;
   };
   submitLabel?: string;
+  productId?: string;
+  initialImages?: string[];
 }
 
 export default function ProductForm({
   action,
   defaultValues = {},
   submitLabel = "Guardar",
+  productId,
+  initialImages = [],
 }: ProductFormProps) {
   return (
     <form action={action} className="space-y-6">
@@ -183,6 +188,19 @@ export default function ProductForm({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-muted-foreground">Imágenes</h3>
+        {productId ? (
+          <ProductImageUploader productId={productId} initialImages={initialImages} />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Guarda el producto primero para agregar imágenes.
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end pt-4">

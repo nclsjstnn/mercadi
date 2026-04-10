@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateStoreSettings } from "@/actions/store-settings";
+import { LogoUploader } from "@/components/dashboard/logo-uploader";
 
 interface StoreSettingsFormProps {
   enabled: boolean;
@@ -148,16 +149,10 @@ export function StoreSettingsForm({
 
       {/* Logo & Favicon */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label>URL del logo</Label>
-          <Input
-            placeholder="https://..."
-            value={theme.logoUrl}
-            onChange={(e) =>
-              setTheme((t) => ({ ...t, logoUrl: e.target.value }))
-            }
-          />
-        </div>
+        <LogoUploader
+          logoUrl={theme.logoUrl}
+          onChange={(url) => setTheme((t) => ({ ...t, logoUrl: url }))}
+        />
         <div className="space-y-2">
           <Label>URL del favicon</Label>
           <Input
