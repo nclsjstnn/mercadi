@@ -53,7 +53,17 @@ function ColorSwatch({ color, label }: { color: string; label: string }) {
   );
 }
 
+const MOCK_PRODUCTS = [
+  { title: "Producto ejemplo", category: "Categoría", price: "$12.990" },
+  { title: "Otro artículo", category: "Categoría", price: "$8.490", discount: "$11.990" },
+  { title: "Tercer producto", category: "Categoría", price: "$24.900" },
+];
+
 function ThemePreview({ theme }: { theme: GeneratedTheme }) {
+  const headingStyle = { fontFamily: `"${theme.headingFont}", sans-serif` };
+  const bodyStyle = { fontFamily: `"${theme.bodyFont}", sans-serif` };
+  const cardBorder = `1px solid ${theme.mutedColor}22`;
+
   return (
     <div className="space-y-4 rounded-xl border p-4" style={{ backgroundColor: theme.backgroundColor }}>
       <GoogleFontLoader fonts={[theme.headingFont, theme.bodyFont]} />
@@ -69,70 +79,91 @@ function ThemePreview({ theme }: { theme: GeneratedTheme }) {
         <ColorSwatch color={theme.mutedColor} label="Atenuado" />
       </div>
 
-      {/* Mini store preview */}
+      {/* Mini storefront preview */}
       <div
-        className="rounded-lg p-4 space-y-3"
-        style={{ backgroundColor: theme.surfaceColor }}
+        className="overflow-hidden rounded-lg"
+        style={{ backgroundColor: theme.backgroundColor, border: cardBorder }}
       >
-        <h3
-          className="text-lg font-bold"
+        {/* Header — mirrors StoreHeader */}
+        <div
+          className="flex items-center justify-between px-4 py-2.5"
           style={{
-            color: theme.textColor,
-            fontFamily: `"${theme.headingFont}", sans-serif`,
+            backgroundColor: theme.surfaceColor,
+            borderBottom: cardBorder,
           }}
         >
-          Vista previa de tu tienda
-        </h3>
-        <p
-          className="text-sm"
-          style={{
-            color: theme.mutedColor,
-            fontFamily: `"${theme.bodyFont}", sans-serif`,
-          }}
-        >
-          Así lucirán los textos y elementos en tu storefront.
-        </p>
-        <div className="flex gap-2">
-          <div
-            className="px-4 py-2 text-sm font-semibold text-white"
-            style={{
-              backgroundColor: theme.primaryColor,
-              borderRadius: theme.borderRadius,
-            }}
+          <span
+            className="text-sm font-bold"
+            style={{ color: theme.primaryColor, ...headingStyle }}
           >
-            Agregar al carro
-          </div>
-          <div
-            className="px-4 py-2 text-sm font-semibold"
-            style={{
-              backgroundColor: theme.accentColor,
-              borderRadius: theme.borderRadius,
-              color: theme.textColor,
-            }}
-          >
-            Ver detalle
+            Mi Tienda
+          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs" style={{ color: theme.mutedColor, ...bodyStyle }}>
+              Productos
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: theme.mutedColor }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
           </div>
         </div>
-        <div className="flex gap-3">
-          {[1, 2, 3].map((i) => (
+
+        {/* Product grid */}
+        <div className="grid grid-cols-3 gap-2.5 p-3">
+          {MOCK_PRODUCTS.map((p, i) => (
             <div
               key={i}
-              className="flex-1 space-y-1 rounded p-2"
+              className="flex flex-col overflow-hidden"
               style={{
-                backgroundColor: theme.backgroundColor,
+                backgroundColor: theme.surfaceColor,
                 borderRadius: theme.borderRadius,
-                border: `1px solid ${theme.mutedColor}22`,
+                border: cardBorder,
               }}
             >
-              <div className="h-12 rounded" style={{ backgroundColor: `${theme.primaryColor}22` }} />
+              {/* Image area */}
               <div
-                className="text-xs font-semibold truncate"
-                style={{ color: theme.textColor, fontFamily: `"${theme.headingFont}", sans-serif` }}
-              >
-                Producto {i}
-              </div>
-              <div className="text-xs font-bold" style={{ color: theme.primaryColor }}>
-                $12.990
+                className="aspect-square"
+                style={{ backgroundColor: `${theme.primaryColor}18` }}
+              />
+              {/* Card body */}
+              <div className="flex flex-col gap-1 p-2">
+                <p
+                  className="text-[9px] font-medium uppercase tracking-widest"
+                  style={{ color: theme.mutedColor, ...bodyStyle }}
+                >
+                  {p.category}
+                </p>
+                <p
+                  className="text-[10px] font-semibold leading-tight"
+                  style={{ color: theme.textColor, ...headingStyle }}
+                >
+                  {p.title}
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: theme.primaryColor }}
+                  >
+                    {p.price}
+                  </span>
+                  {p.discount && (
+                    <span
+                      className="text-[9px] line-through"
+                      style={{ color: theme.mutedColor }}
+                    >
+                      {p.discount}
+                    </span>
+                  )}
+                </div>
+                <div
+                  className="mt-1 py-1 text-center text-[9px] font-semibold text-white"
+                  style={{
+                    backgroundColor: theme.primaryColor,
+                    borderRadius: theme.borderRadius,
+                  }}
+                >
+                  Agregar
+                </div>
               </div>
             </div>
           ))}
